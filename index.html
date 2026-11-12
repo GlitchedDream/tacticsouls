@@ -184,19 +184,17 @@ header>div:first-child .gold-title{margin-inline:0}
 #scr-team header .gold-title,#scr-build header .gold-title{margin-inline:auto}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .title-art.small{width:min(62vw,560px)}
-.gate{position:fixed;inset:0;z-index:90;background:#050408;display:grid;place-items:center;transition:opacity .5s ease}
+.gate{position:fixed;inset:0;z-index:90;background:#050408;display:grid;place-items:center;transition:opacity .35s ease}
+.gate.in{animation:gateIn .35s ease}@keyframes gateIn{from{opacity:0}to{opacity:1}}
 .gate.out{opacity:0;pointer-events:none}
 .gate>div{display:none}
-.gate[data-phase=intro] .gate-intro,.gate[data-phase=sign] .gate-sign,.gate[data-phase=ask] .gate-ask{display:grid}
+.gate[data-phase=none]{display:none}
+.gate[data-phase=sign] .gate-sign,.gate[data-phase=ask] .gate-ask{display:grid}
 .gate-ask{position:absolute;inset:0;place-items:center;align-content:center;gap:clamp(10px,3vh,20px);padding:20px;text-align:center;background:radial-gradient(ellipse at 50% 38%,#1d1630 0%,#0c0914 55%,#050408 100%)}
 .gate-logo-sm{font-size:clamp(22px,5vh,38px)!important;text-transform:none!important;letter-spacing:.06em!important}
 .gate-link{position:relative;font:13px "Gallaecia Forte","Cinzel",serif!important;color:#8d84a0!important;background:none!important;border:0!important;box-shadow:none!important;padding:2px 6px!important;cursor:pointer;text-decoration:underline}
 .gate-link:hover{color:#fff3c4!important}
 .gate button:disabled{opacity:.6;cursor:wait}
-.gate-intro{position:absolute;inset:0;place-items:center;background:#000}
-.gate-intro video{width:100%;height:100%;object-fit:contain;background:#000}
-.gate-skip{position:absolute;right:calc(env(safe-area-inset-right,0px) + 20px);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);font:600 13px "Gallaecia Forte","Cinzel",serif!important;letter-spacing:.14em;text-transform:uppercase;color:#a99fbd!important;background:rgba(10,8,16,.55)!important;border:2px solid #3a3150!important;padding:6px 14px!important;cursor:pointer;opacity:.75}
-.gate-skip:hover{opacity:1;color:#fff3c4!important}
 .gate-sign{position:absolute;inset:0;place-items:center;align-content:center;gap:clamp(10px,3vh,22px);padding:20px;text-align:center;
   background:radial-gradient(ellipse at 50% 38%,#1d1630 0%,#0c0914 55%,#050408 100%)}
 .gate-sign::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 2px,transparent 2px 4px)}
@@ -928,10 +926,9 @@ body[data-screen="profile"] .pfbtn img{filter:drop-shadow(0 0 4px rgba(240,200,7
 <button type="button" id="psBtn" class="sndbtn psbtn" aria-label="Pause menu" title="Pause menu"><img id="psImg" alt=""></button>
 <button type="button" id="pfBtn" class="sndbtn pfbtn" aria-label="Your profile" title="Profile"><img id="pfImg" alt=""></button>
 <button type="button" id="sndBtn" class="sndbtn" aria-pressed="true" aria-label="Sound on. Turn sound off" title="Sound on"><img id="sndImg" alt=""></button>
-<div class="gate" id="gate" data-phase="intro" role="dialog" aria-label="Tactic Souls">
-  <div class="gate-intro"><video id="gateVid" muted playsinline preload="auto"></video><button type="button" class="gate-skip" id="gateSkip">Skip</button></div>
+<div class="gate" id="gate" data-phase="none" role="dialog" aria-label="Tactic Souls">
   <div class="gate-sign">
-    <div class="gate-logo">Tactic Souls</div><div class="gate-sub">A Tactics Saga</div>
+    <div class="gate-logo">Tactic Souls</div><div class="gate-sub">A Hoodie Gang Creation</div>
     <button type="button" class="enterbtn" id="gateX"><svg class="xlogo" viewBox="0 0 8 8" width="28" height="28" shape-rendering="crispEdges" aria-hidden="true"><g fill="#fff3c4"><rect x="0" y="0" width="2" height="1"/><rect x="1" y="1" width="2" height="1"/><rect x="2" y="2" width="2" height="1"/><rect x="3" y="3" width="2" height="2"/><rect x="4" y="5" width="2" height="1"/><rect x="5" y="6" width="2" height="1"/><rect x="6" y="7" width="2" height="1"/><rect x="6" y="0" width="2" height="1"/><rect x="5" y="1" width="2" height="1"/><rect x="4" y="2" width="1" height="1"/><rect x="2" y="5" width="1" height="1"/><rect x="1" y="6" width="2" height="1"/><rect x="0" y="7" width="2" height="1"/></g></svg><span>Sign in with X</span></button>
     <button type="button" class="gate-guest" id="gateGuest">Play as guest</button>
     <p class="gate-note">Sign in to save your warbands and show up on the Leaderboard. Guests can play, but nothing is saved.</p>
@@ -952,9 +949,9 @@ body[data-screen="profile"] .pfbtn img{filter:drop-shadow(0 0 4px rgba(240,200,7
 
 <!-- TITLE -->
 <section class="screen on" id="scr-title" aria-label="Title screen. Tap to start." role="button" tabindex="0">
-  <div class="title-wrap"><canvas class="title-art" id="titleArt" role="img" aria-label="Tactic Souls"></canvas><div class="subtitle">A Tactics Saga</div></div>
+  <div class="title-wrap"><canvas class="title-art" id="titleArt" role="img" aria-label="Tactic Souls"></canvas><div class="subtitle">A Hoodie Gang Creation</div></div>
   <div></div>
-  <div class="title-foot"><div class="tap">Tap to start</div><p class="sub savenote">Your warbands save in this browser.</p></div>
+  <div class="title-foot"><div class="tap">Tap to start</div><p class="sub savenote">Sign in with X to save your warbands.</p></div>
 </section>
 
 <!-- TEAM -->
@@ -1174,7 +1171,7 @@ body[data-screen="profile"] .pfbtn img{filter:drop-shadow(0 0 4px rgba(240,200,7
 (() => {
 const $=id=>document.getElementById(id);
 // GATE: the studio intro and sign-in page are up, so no music yet. GUEST: play without saving.
-let GATE=true,GUEST=false,cloudOn=false,cloudTimer=0;
+let GATE=true,HOLD=false,GUEST=false,cloudOn=false,cloudTimer=0;
 const W=440,H=300,N=12,C=N/2;
 const HW=16,HH=8,HS=8;let OX=220,OY=172;
 const cv=$('c'),ctx=cv.getContext('2d');ctx.imageSmoothingEnabled=false;
@@ -1768,7 +1765,7 @@ function fadeMusic(to,ms,then){clearInterval(musicFade);const from=music.volume,
   musicFade=setInterval(()=>{const f=Math.min(1,(performance.now()-t0)/ms);music.volume=Math.max(0,Math.min(1,from+(to-from)*f));if(f>=1){clearInterval(musicFade);then&&then();}},30);}
 // if the browser refuses to start a song (no recent tap), try again on the next tap or key
 function rearmMusic(){const go=()=>{removeEventListener('pointerdown',go,true);removeEventListener('keydown',go,true);if(!MUTED)musicOn();};addEventListener('pointerdown',go,true);addEventListener('keydown',go,true);}
-function playTrack(t){if(GATE)return;const p=t.play();if(p&&p.catch)p.catch(e=>{if(e&&e.name==='NotAllowedError')rearmMusic();});}
+function playTrack(t){if(HOLD)return;const p=t.play();if(p&&p.catch)p.catch(e=>{if(e&&e.name==='NotAllowedError')rearmMusic();});}
 function musicOn(){clearInterval(musicFade);music.volume=V();if(music.paused)playTrack(music);}
 function musicOff(){if(music.paused)return;fadeMusic(0,900,()=>music.pause());}
 function chapterTrack(){let ch=0;
@@ -1792,7 +1789,7 @@ function unlockAudio(){removeEventListener('pointerdown',unlockAudio,true);remov
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!MUTED&&screen!=='title'&&music.paused)musicOn();});
 addEventListener('pointerdown',unlockAudio,true);addEventListener('keydown',unlockAudio,true);
 // try to start the title song right away; browsers only allow it once the site has earned trust (installed app, or played here before), otherwise the first tap starts it
-setTimeout(()=>{if(GATE||!music.paused)return;music.volume=V();const p=music.play();if(p&&p.then)p.then(()=>{removeEventListener('pointerdown',unlockAudio,true);removeEventListener('keydown',unlockAudio,true);}).catch(()=>{});},300);
+setTimeout(()=>{if(HOLD||!music.paused)return;music.volume=V();const p=music.play();if(p&&p.then)p.then(()=>{removeEventListener('pointerdown',unlockAudio,true);removeEventListener('keydown',unlockAudio,true);}).catch(()=>{});},300);
 setTimeout(()=>{musicOn();},0);
 let AC=null;
 function audioCtx(){if(!AC){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;AC=new C();}if(AC.state==='suspended')AC.resume();return AC;}
@@ -3022,11 +3019,11 @@ function joinLostSoul(d){const rec={cls:d.cls,name:d.name,passive:d.passive,lv:d
 function goTitleNext(){renderTeam();show('team');}
 let leavingTitle=false;
 function startFromTitle(){
-  if(GATE||leavingTitle)return;leavingTitle=true;swordSlash();
+  if(leavingTitle||$('gate').dataset.phase!=='none')return;leavingTitle=true;swordSlash();
   const els=[$('bgScene'),document.querySelector('.wrap')];
   els.forEach(e=>{e.classList.remove('shake');void e.offsetWidth;e.classList.add('shake');});
   setTimeout(()=>$('fader').classList.add('on'),300);
-  setTimeout(()=>{els.forEach(e=>e.classList.remove('shake'));goTitleNext();requestAnimationFrame(()=>requestAnimationFrame(()=>$('fader').classList.remove('on')));leavingTitle=false;},700);
+  setTimeout(()=>{els.forEach(e=>e.classList.remove('shake'));if(GATE)openGate();else goTitleNext();requestAnimationFrame(()=>requestAnimationFrame(()=>$('fader').classList.remove('on')));leavingTitle=false;},700);
 }
 $('scr-title').onclick=startFromTitle;
 $('scr-title').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();startFromTitle();}};
@@ -4543,13 +4540,16 @@ function frame(now){
 requestAnimationFrame(frame);
 // ----- studio intro, then sign in or play as guest, then the title screen and its music -----
 const SUPA_URL='https://qjzszwxqwbkyemiwjxvp.supabase.co',SUPA_KEY='sb_publishable_62k0Ftr02f_ojYMs8J0Dsw_9xXpFqJ_';
-const INTRO_SRC='intro.mp4';    // the studio intro video; until it exists the page goes straight to sign in
 const CLOUD_KEYS=[SLOTS_KEY,PROFILE_KEY,MK_KEY,PVP_KEY],OWNER_KEY='tacticsouls.owner';
 const backFromX=/[?&](code|error)=/.test(location.search)||/access_token=|error=/.test(location.hash);
 const xErr=(()=>{const q=new URLSearchParams(location.search+'&'+location.hash.replace(/^#/,''));return q.get('error_description')||'';})();
 let sb=null,sbUser=null;
 try{if(window.supabase&&SUPA_URL&&(!window.__DEBUG||window.__gateTest))sb=window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});}catch(e){sb=null;}
-const sbReady=sb?sb.auth.getSession().then(r=>{sbUser=r&&r.data&&r.data.session?r.data.session.user:null;return sbUser;}).catch(()=>null):Promise.resolve(null);
+// a sign-in lasts a week at most, counted from the last time the player signed in with X
+const SIGNIN_MAX=7*24*3600*1000;
+const sbReady=sb?sb.auth.getSession().then(async r=>{sbUser=r&&r.data&&r.data.session?r.data.session.user:null;
+  if(sbUser){const t=Date.parse(sbUser.last_sign_in_at||sbUser.created_at||'');if(!t||Date.now()-t>SIGNIN_MAX){try{await sb.auth.signOut();}catch(e){}sbUser=null;}}
+  return sbUser;}).catch(()=>null):Promise.resolve(null);
 sbReady.then(()=>{if(backFromX)try{history.replaceState(null,'',location.pathname);}catch(e){}});
 const xHandle=u=>{const m=(u&&u.user_metadata)||{};return m.user_name||m.preferred_username||m.name||'';};
 // cloud save: this browser keeps the working copy, and every save is sent to the account a moment later
@@ -4566,23 +4566,26 @@ function reloadState(){slots=loadSlots();selSlot=Math.max(0,slots.findIndex(Bool
   try{pvMine=JSON.parse(localStorage.getItem(PVP_KEY))||null;}catch(e){pvMine=null;}try{mkMine=JSON.parse(localStorage.getItem(MK_KEY))||[];}catch(e){mkMine=[];}syncPfBtn();}
 const gMsg=t=>{$('gateMsg').textContent=t||'';};
 function gateBusy(on){for(const id of ['gateX','gateGuest','gateOut','gateUp','gateFresh'])$(id).disabled=on;}
-async function gateSign(){const v=$('gateVid');try{v.pause();}catch(e){}$('gate').dataset.phase='sign';if(xErr)gMsg('X sign-in did not finish. '+xErr);
-  await sbReady;const x=$('gateX').querySelector('span');
-  if(sbUser){x.textContent='Continue as @'+(xHandle(sbUser)||'player');$('gateOut').hidden=false;}else{x.textContent='Sign in with X';$('gateOut').hidden=true;}
+async function openGate(){const g=$('gate');g.style.display='';g.classList.remove('out');g.classList.add('in');g.dataset.phase='sign';
+  if(xErr)gMsg('X sign-in did not finish. '+xErr);
+  const x=$('gateX').querySelector('span');x.textContent='Sign in with X';$('gateOut').hidden=true;
+  await sbReady;
+  if(sbUser&&!xErr){x.textContent='Signing in as @'+(xHandle(sbUser)||'player');continueX();return;}
   setTimeout(()=>{try{$('gateX').focus();}catch(e){}},60);}
 function gateDone(mode){if(!GATE)return;
   const note=document.querySelector('#scr-title .savenote');
   if(mode==='guest'){GUEST=true;cloudOn=false;reloadState();if(note)note.textContent='Guest mode. Nothing you do here is saved.';}
-  else if(mode==='x'){if(note)note.textContent='Signed in as @'+(xHandle(sbUser)||'player')+'. Your warbands save to your account.';}
+  else if(mode==='x'){if(note)note.textContent='Signed in as @'+(xHandle(sbUser)||'player')+'.';}
   else if(note)note.textContent='Your warbands save in this browser.';
-  GATE=false;$('gate').dataset.phase='done';const g=$('gate');g.classList.add('out');setTimeout(()=>{g.style.display='none';},520);
-  if(!MUTED){clearInterval(musicFade);music.volume=0;playTrack(music);fadeMusic(V(),900);}
-  renderAccount();try{$('scr-title').focus();}catch(e){}}
+  GATE=false;const g=$('gate');$('fader').classList.add('on');
+  setTimeout(()=>{g.classList.remove('in');g.dataset.phase='none';goTitleNext();requestAnimationFrame(()=>requestAnimationFrame(()=>$('fader').classList.remove('on')));},340);
+  if(!MUTED&&music.paused){clearInterval(musicFade);music.volume=V();playTrack(music);}
+  renderAccount();}
 function finishX(){try{localStorage.setItem(OWNER_KEY,sbUser.id);}catch(e){}cloudOn=true;
   const h=xHandle(sbUser);profile.account={x:h,id:sbUser.id};saveProfile();cloudPush();gateBusy(false);gateDone('x');}
 async function continueX(){gateBusy(true);gMsg('Loading your save...');let row=null;
   try{const r=await sb.from('saves').select('data').eq('user_id',sbUser.id).maybeSingle();if(r.error)throw r.error;row=r.data;}
-  catch(e){gateBusy(false);gMsg('Could not reach your save right now. Try again in a moment.');console.warn(e);return;}
+  catch(e){gateBusy(false);$('gateX').querySelector('span').textContent='Continue as @'+(xHandle(sbUser)||'player');$('gateOut').hidden=false;gMsg('Could not reach your save right now. Try again in a moment.');console.warn(e);return;}
   let owner=null;try{owner=localStorage.getItem(OWNER_KEY);}catch(e){}
   const has=localHasSave();
   if(row&&row.data){if(has&&owner!==sbUser.id)backupLocal();applyCloud(row.data);reloadState();finishX();return;}
@@ -4595,7 +4598,7 @@ async function xSignOut(){cloudOn=false;try{await sb.auth.signOut();}catch(e){}s
 $('gateGuest').addEventListener('click',()=>{if(typeof uiClick==='function')uiClick();gateDone('guest');});
 $('gateX').addEventListener('click',()=>{if(typeof uiClick==='function')uiClick();
   if(!sb){gateDone('local');return;}if(sbUser){continueX();return;}xSignIn();});
-$('gateOut').addEventListener('click',async()=>{gateBusy(true);await xSignOut();gateBusy(false);gMsg('Signed out.');gateSign();});
+$('gateOut').addEventListener('click',async()=>{gateBusy(true);await xSignOut();gateBusy(false);gMsg('Signed out.');openGate();});
 $('gateUp').addEventListener('click',()=>{if(typeof uiClick==='function')uiClick();$('gateAskMsg').textContent='Uploading...';gateBusy(true);reloadState();finishX();});
 $('gateFresh').addEventListener('click',()=>{if(typeof uiClick==='function')uiClick();backupLocal();clearLocal();reloadState();finishX();});
 // the account row on the Profile screen
@@ -4605,14 +4608,8 @@ function renderAccount(){const box=$('pfAcct'),note=$('pfAcctNote');if(!box)retu
   else if(GUEST){box.innerHTML='<button type="button" id="pfSignIn">Sign in with X</button>';note.textContent='You are playing as a guest, so nothing is saved.';$('pfSignIn').onclick=()=>{if(sb)xSignIn();};}
   else{box.innerHTML=sb?'<button type="button" id="pfSignIn">Sign in with X</button>':'';note.textContent='Your profile saves in this browser. Sign in with X to save it to an account.';if($('pfSignIn'))$('pfSignIn').onclick=()=>xSignIn();}}
 renderAccount();
-(function gateIntro(){const v=$('gateVid');let done=false;const go=()=>{if(done)return;done=true;gateSign();};
-  if(window.__DEBUG&&!window.__gateTest){done=true;gateDone('local');return;}
-  if(backFromX){go();return;}
-  v.addEventListener('ended',go);v.addEventListener('error',go);$('gateSkip').addEventListener('click',go);
-  addEventListener('keydown',e=>{if($('gate').dataset.phase==='intro'&&(e.key==='Escape'||e.key==='Enter'||e.key===' ')){e.preventDefault();go();}});
-  const t=setTimeout(()=>{if(v.readyState<2)go();},2500);
-  v.addEventListener('loadeddata',()=>{clearTimeout(t);const p=v.play();if(p&&p.catch)p.catch(go);});
-  v.src=INTRO_SRC;})();
+if(window.__DEBUG&&!window.__gateTest)GATE=false;
+sbReady.then(u=>{const n=document.querySelector('#scr-title .savenote');if(u&&n&&GATE)n.textContent='Signed in as @'+(xHandle(u)||'player')+'.';});
 if(window.__DEBUG)window.__dbg={memberUnit,openMenu,openProfile,openBoard,storyBest,get profile(){return profile;},GUEST_PAL,rollName,randomTeam,NAMES,TEAM_NAMES,get aim(){return aim;},execPlan,DIALOG,openRecruit,planFoe,validTarget,ABIL,paintSprite,setAllyColor,get musicVol(){return music.volume;},get track(){return music.src.split('/').pop()+(music.paused?' (paused)':' (playing)');},get vols(){return [VOL,VOL_GAME,VOL_MENU];},planFor,reach,ABIL,PRIMARY,planFoe,refreshPlayer,get hoverPlan(){return hoverPlan;},get curCursor(){return curCursor;},get units(){return units;},get map(){return map;},get active(){return active;},get planCache(){return planCache;},get pmoveKeys(){return pmoveKeys;},get busy(){return busy;},proj,tileAt,cv,
   screenOf(i,j){const m=tileAt(i,j);const p=proj(i+.5,j+.5,m.h);const r=cv.getBoundingClientRect();return [r.left+p[0]*r.width/cv.width,r.top+p[1]*r.height/cv.height];}};
 })();
