@@ -4544,7 +4544,9 @@ const CLOUD_KEYS=[SLOTS_KEY,PROFILE_KEY,MK_KEY,PVP_KEY],OWNER_KEY='tacticsouls.o
 const backFromX=/[?&](code|error)=/.test(location.search)||/access_token=|error=/.test(location.hash);
 const xErr=(()=>{const q=new URLSearchParams(location.search+'&'+location.hash.replace(/^#/,''));return q.get('error_description')||'';})();
 let sb=null,sbUser=null;
-try{if(window.supabase&&SUPA_URL&&(!window.__DEBUG||window.__gateTest))sb=window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});}catch(e){sb=null;}
+// X can only send players back to the real site, so anywhere else (like the Claude preview) keeps the browser save
+const X_HOSTS=['tacticsouls.xyz','www.tacticsouls.xyz','tacticsouls.vercel.app'];
+try{if(window.supabase&&SUPA_URL&&(X_HOSTS.includes(location.hostname)||window.__gateTest))sb=window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});}catch(e){sb=null;}
 // a sign-in lasts a week at most, counted from the last time the player signed in with X
 const SIGNIN_MAX=7*24*3600*1000;
 const sbReady=sb?sb.auth.getSession().then(async r=>{sbUser=r&&r.data&&r.data.session?r.data.session.user:null;
@@ -4568,7 +4570,7 @@ const gMsg=t=>{$('gateMsg').textContent=t||'';};
 function gateBusy(on){for(const id of ['gateX','gateGuest','gateOut','gateUp','gateFresh'])$(id).disabled=on;}
 async function openGate(){const g=$('gate');g.style.display='';g.classList.remove('out');g.classList.add('in');g.dataset.phase='sign';
   if(xErr)gMsg('X sign-in did not finish. '+xErr);
-  const x=$('gateX').querySelector('span');x.textContent='Sign in with X';$('gateOut').hidden=true;
+  const x=$('gateX').querySelector('span');x.textContent=sb?'Sign in with X':'Play with this browser\'s save';$('gateOut').hidden=true;
   await sbReady;
   if(sbUser&&!xErr){x.textContent='Signing in as @'+(xHandle(sbUser)||'player');continueX();return;}
   setTimeout(()=>{try{$('gateX').focus();}catch(e){}},60);}
