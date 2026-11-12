@@ -704,6 +704,9 @@ body[data-screen="profile"] .pfbtn img{filter:drop-shadow(0 0 4px rgba(240,200,7
 .lbcard.me{border-color:var(--gold-lo);background:rgba(240,200,74,.09)}
 .lbcard.top{border-color:#4a3a1c}
 .lbcard.empty{opacity:.38}
+.lbcard .lbx{display:inline-grid;place-items:center;width:16px;height:16px;flex:none;color:#d8cfe8;background:#0b0910;border:1px solid #4a3f62;text-decoration:none;margin-left:auto}
+.lbcard .lbx:hover{color:#fff3c4;border-color:var(--gold-lo)}
+.lbcard .lbx svg{width:10px;height:10px}
 .lbfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .lbpager{display:flex;align-items:center;gap:8px}.lbpager button,.lbfoot>button{padding:5px 10px!important;font-size:10px!important}
 .lbpager span{font-family:var(--f-display);font-size:11px;letter-spacing:.12em;color:var(--ink-dim);white-space:nowrap}
@@ -4119,18 +4122,30 @@ $('pfBtn').onclick=()=>{if(screen==='profile')return;pfFrom=screen;openProfile()
 let pfFrom='menu';
 $('pfBack').onclick=()=>{if(!team){show('team');return;}openMenu();};
 // ----- leaderboard -----
-// Only this player is known until accounts go online; the board takes any list of {name,pfp,story,pvp,me}
-function boardEntries(){const me={name:profileName(),pfp:currentPfp(),story:storyBest(),pvp:profile.pvp,me:true};return window.__DEBUG&&window.__lbMock?[me,...window.__lbMock]:[me];}
+// The board lists every signed-in player from the server, with this player's own entry kept live; it takes any list of {name,pfp,story,pvp,x,me}
+let lbOnline=null,lbLoading=false,lbErr=false;
+function boardEntries(){const myId=cloudOn&&sbUser?sbUser.id:null;
+  const me={name:profileName(),pfp:currentPfp(),story:storyBest(),pvp:profile.pvp,x:myId?xHandle(sbUser):'',me:true};
+  const others=(lbOnline||[]).filter(r=>r.user_id!==myId).map(r=>({name:r.name||r.x_handle||'Nameless',pfp:r.pfp||null,story:+r.story||0,pvp:{w:+r.pvp_w||0,l:+r.pvp_l||0},x:r.x_handle||''}));
+  const mock=window.__DEBUG&&window.__lbMock?window.__lbMock:[];
+  return [...(GUEST&&!mock.length?[]:[me]),...others,...mock];}
+async function loadBoard(){if(!sb||lbLoading)return;lbLoading=true;
+  try{const r=await sb.from('players').select('user_id,x_handle,name,pfp,story,pvp_w,pvp_l').order('story',{ascending:false}).order('pvp_w',{ascending:false}).limit(500);
+    if(r.error)throw r.error;lbOnline=r.data||[];lbErr=false;}catch(e){lbErr=true;console.warn('leaderboard',e);}
+  lbLoading=false;if(screen==='board')renderBoard();}
+// this player's public entry, sent along with every cloud save
+async function pushPlayer(){if(!cloudOn||!sb||!sbUser)return;const pv=profile.pvp||{w:0,l:0};
+  try{const r=await sb.from('players').upsert({user_id:sbUser.id,x_handle:xHandle(sbUser),name:profileName(),pfp:currentPfp()||null,story:storyBest(),pvp_w:+pv.w||0,pvp_l:+pv.l||0,updated_at:new Date().toISOString()});if(r.error)console.warn('leaderboard entry',r.error.message);}catch(e){console.warn('leaderboard entry',e);}}
 function rankBoard(list){return list.slice().sort((a,b)=>b.story-a.story||b.pvp.w-a.pvp.w||a.pvp.l-b.pvp.l||a.name.localeCompare(b.name));}
 let boardTop=[];
-function openBoard(){lbPage=0;renderBoard();show('board');if(typeof uiClick==='function')uiClick();}
+function openBoard(){lbPage=0;renderBoard();show('board');loadBoard();if(typeof uiClick==='function')uiClick();}
 let lbPage=0;const LB_PER=10;
 function renderBoard(){const L=rankBoard(boardEntries());boardTop=L.slice(0,5);const pages=Math.max(1,Math.ceil(L.length/LB_PER));lbPage=Math.min(Math.max(0,lbPage),pages-1);
   const meAt=L.findIndex(e=>e.me),cells=[];for(let k=0;k<LB_PER;k++){const i=lbPage*LB_PER+k;cells.push(i<L.length?{e:L[i],i}:{e:null,i});}
   const of=()=>storyDone()?LAST_MISSION:'??';
-  $('lbPanel').innerHTML=`<div class="lbgrid">`+cells.map(({e,i})=>e?`<div class="lbcard${e.me?' me':''}${i<5?' top':''}"><canvas data-lb="${i}"></canvas><div class="lbtx"><div class="lbtop"><span class="rk">#${i+1}</span><span class="nm">${esc(e.name)}</span></div><div class="st">Story <b>${e.story}/${of(e.story)}</b> · PVP <b>${e.pvp.w}–${e.pvp.l}</b></div></div></div>`
+  $('lbPanel').innerHTML=`<div class="lbgrid">`+cells.map(({e,i})=>e?`<div class="lbcard${e.me?' me':''}${i<5?' top':''}"><canvas data-lb="${i}"></canvas><div class="lbtx"><div class="lbtop"><span class="rk">#${i+1}</span><span class="nm">${esc(e.name)}</span>${e.x&&/^[A-Za-z0-9_]{1,15}$/.test(e.x)?`<a class="lbx" href="https://x.com/${e.x}" target="_blank" rel="noopener" title="@${e.x} on X" aria-label="@${e.x} on X"><svg viewBox="0 0 12 12" aria-hidden="true"><path fill="currentColor" d="M1 1h3l2.4 3.2L9.3 1H11L7.2 5.4 11 11H8L5.5 7.6 2.4 11H1l3.8-4.3z"/></svg></a>`:''}</div><div class="st">Story <b>${e.story}/${of(e.story)}</b> · PVP <b>${e.pvp.w}–${e.pvp.l}</b></div></div></div>`
       :`<div class="lbcard empty"><canvas data-lb="-1"></canvas><div class="lbtx"><div class="lbtop"><span class="rk">#${i+1}</span><span class="nm">Open</span></div><div class="st">Awaiting a challenger</div></div></div>`).join('')+`</div>
-    <div class="lbfoot"><button type="button" id="lbMe"${meAt<0?' disabled':''}>Find me${meAt>=0?' · #'+(meAt+1):''}</button><p class="lbnote">Other warlords appear here once sign in goes live.</p>
+    <div class="lbfoot"><button type="button" id="lbMe"${meAt<0?' disabled':''}>Find me${meAt>=0?' · #'+(meAt+1):''}</button><p class="lbnote">${lbErr?'Could not reach the board right now. Showing what we have.':!sb?'Sign in on tacticsouls.xyz to see every warlord.':GUEST?'Guests are not ranked. Sign in with X to join the board.':!cloudOn?'Sign in with X to join the board.':lbLoading&&!lbOnline?'Gathering the warlords...':'Ranked by Story, then PVP wins.'}</p>
       <div class="lbpager"><button type="button" id="lbPrev" aria-label="Previous page"${lbPage?'':' disabled'}>&#9664;</button><span>Page ${lbPage+1} of ${pages}</span><button type="button" id="lbNext" aria-label="Next page"${lbPage<pages-1?'':' disabled'}>&#9654;</button></div></div>`;
   $('lbPanel').querySelectorAll('canvas').forEach(c=>{const i=+c.dataset.lb;drawPfpCircle(c,i>=0?L[i].pfp:null,22);});
   $('lbPrev').onclick=()=>{lbPage--;renderBoard();uiClick();};$('lbNext').onclick=()=>{lbPage++;renderBoard();uiClick();};
@@ -4143,7 +4158,7 @@ const UNLOCK_AT={mBattle:20,mPvp:40,mMarket:60};
 function syncMenuLocks(){const best=storyBest();
   $('mBattle').hidden=best<UNLOCK_AT.mBattle;
   for(const[id,sub,txt]of[['mPvp','mPvpSub','Fight warlords in the Pit. Records are public.'],['mMarket','mMarketSub','Buy, sell and trade warriors.']]){const b=$(id),open=best>=UNLOCK_AT[id];
-    b.hidden=!open;b.disabled=!open;b.classList.toggle('go',open);b.classList.toggle('soon',!open);b.classList.remove('locked');b.querySelector('.soonchip').textContent='SOON';b.querySelector('.soonchip').hidden=true;$(sub).textContent=txt;}
+    b.hidden=!open;b.disabled=!open;b.classList.toggle('go',open);b.classList.toggle('soon',!open);b.classList.remove('locked');b.querySelector('.soonchip').textContent='SOON';b.querySelector('.soonchip').hidden=id!=='mPvp'||!open;$(sub).textContent=txt;}
   const box=$('mBoard').parentElement,n=[...box.children].filter(b=>!b.hidden).length;box.style.setProperty('--cols',n<=3?n:n===4?2:3);}
 function soonNote(title,text){$('soonTitle').textContent=title;$('soonText').textContent=text;$('soonModal').hidden=false;if(typeof uiClick==='function')uiClick();setTimeout(()=>$('soonOk').focus(),0);}
 $('soonOk').onclick=()=>{$('soonModal').hidden=true;};
@@ -4318,7 +4333,7 @@ $('pvGo').onclick=()=>{if(pvMine){pvMine=null;savePvp();renderPvp();uiClick();re
 $('pvList').addEventListener('click',e=>{const pg=e.target.closest('[data-pg]');if(pg&&!pg.disabled){pvPage+=+pg.dataset.pg;renderPvp();uiClick();return;}if(e.target.closest('[data-cancel]')){pvMine=null;savePvp();renderPvp();uiClick();return;}
   const j=e.target.closest('[data-join]');if(j&&!j.disabled)soonNote('PVP','Battles against other warlords start once online play goes live. Your listing and squad picks are ready for it.');});
 $('pvBack').onclick=()=>openMenu();
-$('mPvp').onclick=()=>openPvp();
+$('mPvp').onclick=()=>soonNote('The Pit opens soon','PVP is still being forged. Soon you will challenge other warlords and their squads here, and every win and loss will count on the Leaderboard.');
 function pvHit(e){const[x,y]=sceneCoords(e.clientX,e.clientY);const ord=pvOrder();for(let p=ord.length-1;p>=0;p--){const k=ord[p],P=PV_POS[p];if(!P)continue;if(x>=P[0]-11&&x<=P[0]+11&&y>=P[1]-32&&y<=P[1]+2)return k;}return -1;}
 $('scr-pvp').addEventListener('click',e=>{if(e.target.closest('.win,button,header'))return;const k=pvHit(e);if(k>=0)pvToggle(k);});
 $('scr-pvp').addEventListener('pointermove',e=>{if(e.target.closest('.win,button,header')){pvHover=-1;return;}pvHover=pvHit(e);$('scr-pvp').style.cursor=pvHover>=0?'pointer':'';});
@@ -4558,7 +4573,7 @@ const xHandle=u=>{const m=(u&&u.user_metadata)||{};return m.user_name||m.preferr
 function cloudSoon(){if(!cloudOn||GUEST)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(cloudPush,1500);}
 function cloudBlob(){const d={v:1};for(const k of CLOUD_KEYS){try{const v=localStorage.getItem(k);if(v!=null)d[k]=v;}catch(e){}}return d;}
 async function cloudPush(){clearTimeout(cloudTimer);cloudTimer=0;if(!cloudOn||!sb||!sbUser)return;
-  try{const r=await sb.from('saves').upsert({user_id:sbUser.id,data:cloudBlob(),updated_at:new Date().toISOString()});if(r.error)console.warn('cloud save',r.error.message);}catch(e){console.warn('cloud save',e);}}
+  try{const r=await sb.from('saves').upsert({user_id:sbUser.id,data:cloudBlob(),updated_at:new Date().toISOString()});if(r.error)console.warn('cloud save',r.error.message);}catch(e){console.warn('cloud save',e);}pushPlayer();}
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&cloudTimer)cloudPush();});
 function localHasSave(){try{const v=JSON.parse(localStorage.getItem(SLOTS_KEY));return Array.isArray(v)&&v.some(Boolean);}catch(e){return false;}}
 function backupLocal(){try{localStorage.setItem('tacticsouls.backup.'+Date.now(),JSON.stringify(cloudBlob()));}catch(e){}}
