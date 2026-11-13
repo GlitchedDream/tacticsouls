@@ -804,6 +804,12 @@ body[data-screen="profile"] .pfbtn img{filter:drop-shadow(0 0 4px rgba(240,200,7
 .mkprice svg{width:11px;height:11px;flex:none}
 .mkcard.mine{border-color:#8a6a2a!important}
 .mktag{position:absolute;top:6px;left:6px;font-size:9px;font-family:var(--f-display);letter-spacing:.1em;padding:2px 5px;background:#f0c84a;color:#1a1006}
+.mktag.bid{background:#6fbf6a}
+.mkbids{display:grid;gap:4px;max-height:132px;overflow:hidden}
+.mkbids .row{display:flex;gap:6px;align-items:center;padding:4px 6px;background:rgba(0,0,0,.3);border:1px solid #3a1c20;font-size:12px}
+.mkbids .row b{margin-right:auto;color:var(--ink);font-weight:600}
+.mkbids .row .amt{font-variant-numeric:tabular-nums;color:var(--gold-hi)}
+.mkbids button{font-size:10px!important;padding:3px 8px!important}
 .mkcard{position:relative}
 .mkpager,.pvpager{display:flex;justify-content:center;align-items:center;gap:10px}.mkpager button,.pvpager button{padding:5px 10px!important;font-size:10px!important}.mkpager span,.pvpager span{font-family:var(--f-display);font-size:11px;letter-spacing:.12em;color:var(--ink-dim);white-space:nowrap}
 .mkempty{grid-column:1/-1;text-align:center;color:var(--ink-dim);padding:30px 10px;margin:0}
@@ -4160,7 +4166,7 @@ const UNLOCK_AT={mBattle:20,mPvp:40,mMarket:60};
 function syncMenuLocks(){const best=storyBest();
   $('mBattle').hidden=best<UNLOCK_AT.mBattle;
   for(const[id,sub,txt]of[['mPvp','mPvpSub','Fight warlords in the Pit. Records are public.'],['mMarket','mMarketSub','Buy, sell and trade warriors.']]){const b=$(id),open=best>=UNLOCK_AT[id];
-    b.hidden=!open;b.disabled=!open;b.classList.toggle('go',open);b.classList.toggle('soon',!open);b.classList.remove('locked');b.querySelector('.soonchip').textContent='SOON';b.querySelector('.soonchip').hidden=!open||!(id==='mPvp'||(id==='mMarket'&&sb&&!GUEST&&!window.__DEBUG));$(sub).textContent=txt;}
+    b.hidden=!open;b.disabled=!open;b.classList.toggle('go',open);b.classList.toggle('soon',!open);b.classList.remove('locked');b.querySelector('.soonchip').textContent='SOON';b.querySelector('.soonchip').hidden=!open||id!=='mPvp';$(sub).textContent=txt;}
   const box=$('mBoard').parentElement,n=[...box.children].filter(b=>!b.hidden).length;box.style.setProperty('--cols',n<=3?n:n===4?2:3);}
 function soonNote(title,text){$('soonTitle').textContent=title;$('soonText').textContent=text;$('soonModal').hidden=false;if(typeof uiClick==='function')uiClick();setTimeout(()=>$('soonOk').focus(),0);}
 $('soonOk').onclick=()=>{$('soonModal').hidden=true;};
@@ -4392,12 +4398,12 @@ TILE_SCENES.mPvp=function(g,w,h,now,mini){g.fillStyle='#161010';g.fillRect(0,0,w
 // Other players' listings arrive from the server once online play is live; your own are saved in this browser.
 const MK_KEY='tacticsouls.market.v1',MK_COIN='<svg viewBox="0 0 8 8" aria-hidden="true"><path fill="#2a1a08" d="M2 0h4v1h1v1h1v4H7v1H6v1H2V7H1V6H0V2h1V1h1z"/><path fill="#f0c84a" d="M2 1h4v1h1v4H6v1H2V6H1V2h1z"/><path fill="#fff3b0" d="M2 2h1v1H2z"/><path fill="#94641f" d="M3 3h2v2H3z"/></svg>';
 const TRIBE_TINT={Shadow:['#4a3470','#1e1430'],Spectrum:['#2a7a52','#0f2a1c'],Spirit:['#8a6a2a','#2a1e0c'],Ghost:['#2e6a9a','#0f2236'],Soul:['#2a8a86','#0c2a2a']};
-let mkMine=[],mkTribe='all',mkSort='price-asc',mkSellSel=-1,mkPage=0;
+let mkSrv=null,mkMine=[],mkTribe='all',mkSort='price-asc',mkSellSel=-1,mkPage=0;
 try{mkMine=JSON.parse((GUEST?null:localStorage.getItem(MK_KEY)))||[];}catch(e){mkMine=[];}
 try{const v=JSON.parse(localStorage.getItem('tacticsouls.mkView'));if(v){mkTribe=v.t||'all';mkSort=v.s||'price-asc';}}catch(e){}
 const saveMk=()=>{try{GUEST||localStorage.setItem(MK_KEY,JSON.stringify(mkMine));localStorage.setItem('tacticsouls.mkView',JSON.stringify({t:mkTribe,s:mkSort}));}catch(e){}cloudSoon();};
 const fmtOb=n=>Math.round(n).toLocaleString('en-US');
-function mkListings(){const L=(window.__DEBUG&&window.__mkMock?window.__mkMock:[]).map((x,i)=>({...x,id:x.id||'m'+i}));return mkMine.map(x=>({...x,mine:true})).concat(L);}
+function mkListings(){if(srvOn())return mkSrv?mkSrv.listings:[];const L=(window.__DEBUG&&window.__mkMock?window.__mkMock:[]).map((x,i)=>({...x,id:x.id||'m'+i}));return mkMine.map(x=>({...x,mine:true})).concat(L);}
 function mkView(){let L=mkListings();if(mkTribe!=='all')L=L.filter(x=>TRIBE[x.cls]===mkTribe);
   const[k,d]=mkSort.split('-'),f=d==='asc'?1:-1;return L.sort((a,b)=>f*((k==='price'?a.price-b.price:a.lv-b.lv)||(k==='price'?b.lv-a.lv:a.price-b.price)));}
 // the art square: tribe-colored glow, a floor shadow, the warrior full length
@@ -4409,8 +4415,14 @@ function mkArt(c,x,S,now){c.width=S;c.height=S;const g=c.getContext('2d');g.imag
   withColor(x.color||'storm',()=>paintSprite(sg,memberUnit(x),'front',0,0,false,now));
   g.drawImage(sp,0,0,22,32,Math.round(S/2-11*k),Math.round(S*.87-31*k),22*k,32*k);
   if(x.shiny){g.fillStyle='#fff3b0';const p=[[4,5],[S-6,8],[6,S-12]];p.forEach(([a,b])=>{g.fillRect(a,b-1,1,3);g.fillRect(a-1,b,3,1);});}}
-function pruneMk(){const n=mkMine.length;mkMine=mkMine.filter(x=>{if(x.member)return true;const t=slots.find(s=>s&&s.name===x.team);return !!(t&&t.members.some(m=>m.name===x.name));});if(mkMine.length!==n)saveMk();}
-function openMarket(){pruneMk();if(storyBest()<UNLOCK_AT.mMarket||!team)return;mkPage=0;show('market');renderMarket();if(typeof uiClick==='function')uiClick();}
+function pruneMk(){if(srvOn())return;const n=mkMine.length;mkMine=mkMine.filter(x=>{if(x.member)return true;const t=slots.find(s=>s&&s.name===x.team);return !!(t&&t.members.some(m=>m.name===x.name));});if(mkMine.length!==n)saveMk();}
+function openMarket(){pruneMk();if(storyBest()<UNLOCK_AT.mMarket||!team)return;mkPage=0;show('market');renderMarket();if(typeof uiClick==='function')uiClick();if(srvOn())mkLoad();}
+// the bazaar from the server, with news of sales and bids since the last visit
+function mkLoad(){srvChain=srvChain.then(()=>rpc('ts_market')).then(m=>{mkSrv={listings:(m.listings||[]).map(x=>({...x,seller:x.seller||{name:'Warlord',w:0,l:0}}))};
+    const N=(m.news||[]).map(n=>n.kind==='sold'?`${n.name} sold for ${fmtOb(n.amount)} Obols.`:n.kind==='accepted'?`Your bid on ${n.name} was accepted. They have joined your warband.`:n.kind==='declined'?`Your bid on ${n.name} was declined. ${fmtOb(n.amount)} Obols returned.`:`Bidding on ${n.name} has ended. ${fmtOb(n.amount)} Obols returned.`);
+    if(N.length){srvToast(N.join(' '));rpc('ts_state').then(st=>{applyServer(st);if(screen==='market')renderMarket();}).catch(()=>{});}
+    if(screen==='market')renderMarket();}).catch(e=>{console.warn('market',e);srvToast('The Market is closed right now. Try again soon.');});}
+function mkAct(fn,done){mkClose();$('mkSellModal').hidden=true;srvDo(fn).then(st=>{if(st&&done)done();mkLoad();});}
 function renderMarket(){$('mkObols').innerHTML=`${MK_COIN}${fmtOb(team.obols||0)}`;$('mkSort').value=mkSort;
   const counts={all:mkListings().length};for(const c of CLASSES)counts[TRIBE[c]]=mkListings().filter(x=>x.cls===c).length;
   $('mkTribes').innerHTML=[['all','All',null],...CLASSES.map(c=>[TRIBE[c],TRIBE[c],c])].map(([id,lab,c])=>`<button type="button" data-tr="${id}" aria-pressed="${mkTribe===id}">${c?`<canvas width="16" height="16" data-tc="${c}"></canvas>`:''}${lab}<span class="sub" style="font-size:9px">&nbsp;${counts[id]||0}</span></button>`).join('');
@@ -4419,7 +4431,7 @@ function renderMarket(){$('mkObols').innerHTML=`${MK_COIN}${fmtOb(team.obols||0)
   const grid=$('mkGrid'),mob=innerHeight<=540,gap=mob?6:10,minW=mob?98:138,gw=grid.clientWidth||900,cols=Math.max(1,Math.floor((gw+gap)/(minW+gap)));
   grid.style.gridTemplateColumns=`repeat(${cols},minmax(0,1fr))`;
   const draw=rows=>{const per=cols*rows,pages=Math.max(1,Math.ceil(L.length/per));mkPage=Math.min(Math.max(0,mkPage),pages-1);const P=L.slice(mkPage*per,mkPage*per+per);
-    grid.innerHTML=P.length?P.map((x,i)=>`<button type="button" class="mkcard${x.mine?' mine':''}" data-mk="${i}" aria-label="${esc(x.name)}, level ${x.lv} ${clsName(x.cls)}, ${fmtOb(x.price)} Obols">${x.mine?'<span class="mktag">YOURS</span>':''}<canvas data-art="${i}"></canvas>
+    grid.innerHTML=P.length?P.map((x,i)=>`<button type="button" class="mkcard${x.mine?' mine':''}" data-mk="${i}" aria-label="${esc(x.name)}, level ${x.lv} ${clsName(x.cls)}, ${fmtOb(x.price)} Obols">${x.mine?`<span class="mktag">YOURS${Array.isArray(x.bids)&&x.bids.length?' · '+x.bids.length+(x.bids.length>1?' BIDS':' BID'):''}</span>`:x.my_bid?'<span class="mktag bid">YOUR BID</span>':''}<canvas data-art="${i}"></canvas>
       <div class="mkmeta"><span class="mknm">${esc(x.name)}</span><div class="mkrow"><span class="mklv">LV ${x.lv}</span><span class="mkprice">${MK_COIN}${fmtOb(x.price)}</span></div></div></button>`).join('')
       :`<p class="mkempty">${mkTribe==='all'?'The stalls are empty tonight. Put a warrior up for sale, or come back when the bazaar fills.':'No '+mkTribe+' warriors on the block right now.'}</p>`;
     grid.querySelectorAll('canvas[data-art]').forEach(c=>mkArt(c,P[+c.dataset.art],36));
@@ -4433,11 +4445,11 @@ $('mkPrev').onclick=()=>{mkPage--;renderMarket();uiClick();};$('mkNext').onclick
 $('mkTribes').addEventListener('click',e=>{const b=e.target.closest('[data-tr]');if(!b)return;mkTribe=b.dataset.tr;mkPage=0;saveMk();renderMarket();uiClick();});
 $('mkSort').addEventListener('change',e=>{mkSort=e.target.value;mkPage=0;saveMk();renderMarket();});
 $('mkBack').onclick=()=>openMenu();
-$('mMarket').onclick=()=>{if(sb&&!GUEST&&!window.__DEBUG){soonNote('The Market opens soon','The traders are setting up their stalls. Soon you will buy, sell and bid on warriors from other warlords here.');return;}openMarket();};
+$('mMarket').onclick=()=>openMarket();
 let pageFitT=0;addEventListener('resize',()=>{clearTimeout(pageFitT);pageFitT=setTimeout(()=>{if(screen==='market')renderMarket();else if(screen==='pvp')renderPvp();},140);});
 function mkClose(){$('mkModal').hidden=true;}
 $('mkModal').addEventListener('click',e=>{if(e.target.id==='mkModal')mkClose();});
-function mkOpen(x){const k=statsFor(x.cls,x.passive,x.lv),P=(PASSIVES[x.cls]||[]).find(p=>p.id===x.passive),me=x.mine,afford=(team.obols||0)>=x.price;
+function mkOpen(x){if(srvOn())return mkOpenSrv(x);const k=statsFor(x.cls,x.passive,x.lv),P=(PASSIVES[x.cls]||[]).find(p=>p.id===x.passive),me=x.mine,afford=(team.obols||0)>=x.price;
   $('mkDlg').innerHTML=`<button type="button" class="mkx" id="mkX">Close</button><canvas class="mkart" id="mkBig"></canvas>
     <div class="mkinfo"><div><h1 id="mkName">${esc(x.name)}</h1><div class="mkcls">${clsName(x.cls)} · ${TRIBE[x.cls]} Tribe · Level ${x.lv}${x.shiny?' · Shiny':''}</div></div>
       <div class="mkstats">${[['HP','hp'],['MP','mp'],['ATK','atk'],['DEF','def'],['MAG','mag'],['RES','res'],['SPD','speed'],['MOVE','move']].map(([l,f])=>`<div><span>${l}</span><b>${k[f]!=null?k[f]:'–'}</b></div>`).join('')}</div>
@@ -4454,6 +4466,28 @@ function mkOpen(x){const k=statsFor(x.cls,x.passive,x.lv),P=(PASSIVES[x.cls]||[]
   else{$('mkBuy').onclick=()=>{mkClose();soonNote('Market',`Buying ${x.name} for ${fmtOb(x.price)} Obols happens once online play goes live.`);};
     $('mkBid').onclick=()=>{const v=Math.floor(+$('mkBidIn').value);if(!(v>=1&&v<x.price)){$('mkBidIn').focus();$('mkBidIn').style.borderColor='#c23a2e';return;}if(v>(team.obols||0)){$('mkBidIn').style.borderColor='#c23a2e';return;}
       mkClose();soonNote('Market',`Your ${fmtOb(v)} Obol bid for ${x.name} is ready to send once online play goes live.`);};}}
+function mkOpenSrv(x){const k=statsFor(x.cls,x.passive,x.lv),P=(PASSIVES[x.cls]||[]).find(p=>p.id===x.passive),me=x.mine,afford=(team.obols||0)>=x.price,mb=x.my_bid;
+  const bids=me&&Array.isArray(x.bids)?x.bids:[],full=!me&&team.members.length>=rosterMax();
+  $('mkDlg').innerHTML=`<button type="button" class="mkx" id="mkX">Close</button><canvas class="mkart" id="mkBig"></canvas>
+    <div class="mkinfo"><div><h1 id="mkName">${esc(x.name)}</h1><div class="mkcls">${clsName(x.cls)} · ${TRIBE[x.cls]} Tribe · Level ${x.lv}${x.shiny?' · Shiny':''}</div></div>
+      <div class="mkstats">${[['HP','hp'],['MP','mp'],['ATK','atk'],['DEF','def'],['MAG','mag'],['RES','res'],['SPD','speed'],['MOVE','move']].map(([l,f])=>`<div><span>${l}</span><b>${k[f]!=null?k[f]:'–'}</b></div>`).join('')}</div>
+      ${P?`<p class="mkpass"><b>${esc(P.id)}</b> ${esc(P.desc)}</p>`:''}
+      <div class="mkseller"><canvas id="mkSellerPf"></canvas><div style="display:grid;gap:2px;min-width:0"><span class="label">Seller</span><span class="nm">${esc(x.seller.name)}${me?' <span class="sub" style="font-size:11px">(you)</span>':''}</span><span class="rec">PVP ${x.seller.w}W · ${x.seller.l}L</span></div></div>
+      <div class="mkbuy"><span class="mkprice">${MK_COIN}${fmtOb(x.price)}</span>${me?`<button type="button" id="mkCancel">Take down</button>`:`<button type="button" class="go" id="mkBuy" ${afford&&!full?'':'disabled'}>${full?'Warband full':afford?'Buy now':'Not enough Obols'}</button>`}</div>
+      ${me?(bids.length?`<div class="label">Bids</div><div class="mkbids">${bids.slice(0,innerHeight<=540?1:3).map(b=>`<div class="row"><b>${esc(b.name)}</b><span class="amt">${fmtOb(b.amount)}</span><button type="button" class="go" data-acc="${b.id}">Accept</button><button type="button" data-dec="${b.id}">Decline</button></div>`).join('')}${bids.length>(innerHeight<=540?1:3)?`<span class="sub" style="font-size:11px">+${bids.length-(innerHeight<=540?1:3)} lower bid${bids.length-(innerHeight<=540?1:3)>1?'s':''}. Decline the top one to see the next.</span>`:''}</div>`:'<p class="sub" style="margin:0;font-size:12px">No bids yet. Your warrior waits at the stall until someone buys or you take them down.</p>')
+        :mb?`<div class="mkbid"><span class="sub" style="font-size:12px">Your bid <b style="color:var(--gold-hi)">${fmtOb(mb.amount)}</b> is waiting on the seller.</span><button type="button" id="mkWithdraw">Withdraw</button></div>`
+        :`<div class="mkbid" style="flex-wrap:wrap"><input type="number" id="mkBidIn" min="1" max="${x.price-1}" step="1" placeholder="Your offer" aria-label="Bid in Obols"><button type="button" id="mkBid">Place bid</button></div>`}
+    </div><p class="mknote">${me?'Accepting a bid sends the warrior to the bidder and the Obols to you.':'A bid holds your Obols until the seller answers. Withdraw anytime to get them back.'}</p>`;
+  mkArt($('mkBig'),x,72);drawPfpCircle($('mkSellerPf'),x.seller.pfp,22);$('mkModal').hidden=false;uiClick();
+  $('mkX').onclick=mkClose;const slot=slots.indexOf(team);
+  if(me){$('mkCancel').onclick=()=>{if(x.slot!=null&&x.slot!==slot&&slots[x.slot]){mkClose();soonNote('Market',`${x.name} belongs to ${slots[x.slot].name}. Switch to that warband to bring them home.`);return;}
+      mkAct(()=>rpc('ts_mk_cancel',{p_listing:x.id}),()=>srvToast(`${x.name} is back with your warband.`));};
+    $('mkDlg').querySelectorAll('[data-acc]').forEach(b=>b.onclick=()=>mkAct(()=>rpc('ts_mk_answer',{p_bid:b.dataset.acc,p_accept:true}),()=>{swordSlash();srvToast(`${x.name} is sold.`);}));
+    $('mkDlg').querySelectorAll('[data-dec]').forEach(b=>b.onclick=()=>mkAct(()=>rpc('ts_mk_answer',{p_bid:b.dataset.dec,p_accept:false})));}
+  else{$('mkBuy').onclick=()=>mkAct(()=>rpc('ts_mk_buy',{p_listing:x.id,p_slot:slot}),()=>{swordSlash();srvToast(`${x.name} has joined ${team.name}.`);});
+    if(mb)$('mkWithdraw').onclick=()=>mkAct(()=>rpc('ts_mk_withdraw',{p_bid:mb.id}),()=>srvToast(`Bid withdrawn. ${fmtOb(mb.amount)} Obols returned.`));
+    else $('mkBid').onclick=()=>{const v=Math.floor(+$('mkBidIn').value);if(!(v>=1&&v<x.price)||v>(team.obols||0)){$('mkBidIn').focus();$('mkBidIn').style.borderColor='#c23a2e';return;}
+      mkAct(()=>rpc('ts_mk_bid',{p_listing:x.id,p_slot:slot,p_amount:v,p_name:profileName()}),()=>srvToast(`Bid of ${fmtOb(v)} Obols placed. They are held until the seller answers.`));};}}
 // listing your own warrior
 const mkListed=m=>mkMine.some(y=>y.team===team.name&&y.name===m.name&&!y.member);
 const mkSuggest=m=>Math.max(50,Math.round((m.lv||1)*120*(m.shiny?2:1)/10)*10);
@@ -4472,6 +4506,7 @@ $('mkSellBtn').onclick=openSell;
 function mkTakeOut(k){const c=capIdx(team);const m=team.members.splice(k,1)[0];team.captain=c>k?c-1:c;
   if(team.lineup)team.lineup=team.lineup.filter(x=>x!==k).map(x=>x>k?x-1:x);skSel=[];pvSel=[];return m;}
 $('mkSellGo').onclick=()=>{const k=mkSellSel,m=team.members[k],v=Math.floor(+$('mkSellPrice').value);if(!m||!(v>=1)||k===capIdx(team)||m.ls||team.members.length<=storyMin())return;
+  if(srvOn()){if(!m.id)return;mkAct(()=>rpc('ts_mk_list',{p_slot:slots.indexOf(team),p_warrior:m.id,p_price:v,p_seller:{name:profileName(),pfp:currentPfp()||null}}),()=>{swordSlash();srvToast(`${m.name} is on the block for ${fmtOb(v)} Obols.`);});return;}
   mkTakeOut(k);
   mkMine.unshift({id:'me'+Date.now(),cls:m.cls,name:m.name,passive:m.passive,lv:m.lv||1,shiny:!!m.shiny,color:team.color,team:team.name,member:{...m},price:v,seller:{name:profileName(),pfp:currentPfp(),w:profile.pvp.w,l:profile.pvp.l},at:Date.now()});saveSlots();
   saveMk();$('mkSellModal').hidden=true;renderMarket();swordSlash();};
