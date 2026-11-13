@@ -228,6 +228,10 @@ html,body{height:100%;overflow:hidden}
 .b-top{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:12px}
 .b-title .gold-title{margin-inline:0}
 .b-ctrls{display:flex;gap:8px}
+.b-ctrls .zbtn{font-size:18px;line-height:1;font-weight:700}
+.b-ctrls .zbtn:disabled{opacity:.35}
+#scr-battle #c.zoomed{cursor:grab}
+#scr-battle #c.panning{cursor:grabbing}
 .b-ctrls button{min-width:46px;font-size:14px;padding:9px 12px}
 .b-turn{justify-self:end;margin-top:6px}
 .b-bar{position:absolute;left:0;right:0;bottom:0;z-index:2;display:block}
@@ -1139,9 +1143,11 @@ body[data-screen="profile"] .pfbtn img{filter:drop-shadow(0 0 4px rgba(240,200,7
   <div class="b-top" id="bTop">
     <div class="b-title"><div class="eyebrow" id="bEyebrow">Story · Battle 1</div><h1 id="bTitle">Sunken Shrine</h1></div>
     <div class="b-ctrls">
+      <button id="zoomOut" type="button" class="zbtn" aria-label="Zoom out" disabled>&minus;</button>
       <button id="rotL" type="button" aria-label="Rotate board left">&#9664;</button>
       <button id="pauseBtn" type="button" aria-label="Pause">&#10074;&#10074;</button>
       <button id="rotR" type="button" aria-label="Rotate board right">&#9654;</button>
+      <button id="zoomIn" type="button" class="zbtn" aria-label="Zoom in">+</button>
     </div>
     <div class="eyebrow b-turn" id="roundLabel">Turn 1</div>
   </div>
@@ -3652,7 +3658,7 @@ $('dlgWrap').addEventListener('click',e=>{e.stopPropagation();if(e.target.closes
 window.addEventListener('keydown',e=>{if(!dlg||screen==='battle')return;if(e.key==='Escape')endDialog();else if(e.key==='Enter'||e.key===' '){e.preventDefault();nextLine();}});
 function startBattle(){
   if(dlg){if(dlg.typing)clearInterval(dlg.typing.t);dlg=null;$('dlgWrap').hidden=true;}
-  endBattleTimers();if(srvOn()&&mission&&!window.__AUTOPLAY)mission.ticket=srvStartBattle();initUnits();units.forEach(faceNearest);over=false;busy=false;turnNo=1;retreatPref=null;hideActPick();infoPin=null;hover=null;lastTap=null;$('infoWin').hidden=true;$('results').hidden=true;
+  endBattleTimers();zoomReset();if(srvOn()&&mission&&!window.__AUTOPLAY)mission.ticket=srvStartBattle();initUnits();units.forEach(faceNearest);over=false;busy=false;turnNo=1;retreatPref=null;hideActPick();infoPin=null;hover=null;lastTap=null;$('infoWin').hidden=true;$('results').hidden=true;
   $('bEyebrow').textContent=mission.skirmish?'Battle · '+SKD[mission.diff].label+' · '+mission.size+' v '+mission.size:'Story · Battle '+mission.no;const h=$('bTitle');h.dataset.text=mission.name;goldify(h);$('roundLabel').textContent='Turn 1';
   pops.length=0;sparks.length=0;shots.length=0;$('prompt').hidden=true;
   $('banner').classList.add('off');$('banner').classList.remove('big');
@@ -3870,10 +3876,10 @@ function rightAction(m){
   const c=planCache.get(m.i+','+m.j);let p=c&&c.R&&(hover&&hover.i===m.i&&hover.j===m.j&&hoverSpecial||c.R);
   if(!p){const o=unitAt(m.i,m.j);if(!o||o.ko)p=planFor(active,m,specialIds(active),{noMove:true});}
   if(p&&(p.ab.aoe||validTarget(p.ab,m,active)))execPlan(p);}
-cv.addEventListener('click',e=>{if(performance.now()-lastTouch<800)return;setHover(pick(e));leftAction(pick(e));});
+cv.addEventListener('click',e=>{if(performance.now()-lastTouch<800||performance.now()<panUntil)return;setHover(pick(e));leftAction(pick(e));});
 cv.addEventListener('contextmenu',e=>{e.preventDefault();if(performance.now()-lastTouch<800)return;const m=pick(e);setHover(m);rightAction(m);});
 cv.addEventListener('pointerdown',e=>{if(e.pointerType==='touch')lastTouch=performance.now();});
-cv.addEventListener('pointerup',e=>{if(e.pointerType!=='touch')return;lastTouch=performance.now();tapAt(pick(e),e.clientX,e.clientY);});
+cv.addEventListener('pointerup',e=>{if(e.pointerType!=='touch')return;lastTouch=performance.now();if(performance.now()<panUntil||(panDrag&&panDrag.on))return;tapAt(pick(e),e.clientX,e.clientY);});
 function tapAt(m,x,y){
   if(!$('prompt').hidden)return;hideActPick();if(aim){aimPick(m);return;}
   if(!m){infoPin=null;hover=null;updateHoverPlans();renderInfo();return;}
@@ -3896,6 +3902,21 @@ function tapAt(m,x,y){
 document.addEventListener('click',e=>{if(screen!=='battle'||e.target===cv||e.target.closest('#actPick,#pauseModal,#prompt,#results'))return;
   if(aim&&!e.target.closest('#cmdWin button'))cancelAim();if(e.target.closest('#cmdWin'))return;infoPin=null;hideActPick();renderInfo();});
 const turnCam=dir=>{target+=dir*Math.PI/2;};
+// ----- zoom: three small steps from the default view; when zoomed in, drag to look around without leaving the normal view -----
+const ZOOMS=[1,1.3,1.6];let zoomI=0,panX=0,panY=0,panDrag=null,panUntil=0;
+function zoomApply(){const z=ZOOMS[zoomI],mx=(z-1)*innerWidth/2,my=(z-1)*innerHeight/2;panX=Math.max(-mx,Math.min(mx,panX));panY=Math.max(-my,Math.min(my,panY));
+  cv.style.transformOrigin='50% 50%';cv.style.transform=z===1?'':`translate(${panX}px,${panY}px) scale(${z})`;cv.classList.toggle('zoomed',z>1);cv.style.touchAction=z>1?'none':'';
+  $('zoomOut').disabled=zoomI===0;$('zoomIn').disabled=zoomI===ZOOMS.length-1;}
+function zoomStep(d){const z0=ZOOMS[zoomI];zoomI=Math.max(0,Math.min(ZOOMS.length-1,zoomI+d));const z=ZOOMS[zoomI];if(z===z0)return;panX*=z/z0;panY*=z/z0;zoomApply();if(typeof uiClick==='function')uiClick();}
+function zoomReset(){zoomI=0;panX=panY=0;zoomApply();}
+$('zoomIn').onclick=()=>zoomStep(1);$('zoomOut').onclick=()=>zoomStep(-1);
+cv.addEventListener('pointerdown',e=>{if(ZOOMS[zoomI]===1||e.button>0)return;panDrag={id:e.pointerId,x:e.clientX,y:e.clientY,px:panX,py:panY,on:false};});
+addEventListener('pointermove',e=>{const d=panDrag;if(!d||e.pointerId!==d.id)return;const dx=e.clientX-d.x,dy=e.clientY-d.y;
+  if(!d.on&&Math.hypot(dx,dy)>8){d.on=true;cv.classList.add('panning');hideActPick();}
+  if(d.on){panX=d.px+dx;panY=d.py+dy;zoomApply();}});
+const panEnd=e=>{const d=panDrag;if(!d||e.pointerId!==d.id)return;if(d.on)panUntil=performance.now()+250;panDrag=null;cv.classList.remove('panning');};
+addEventListener('pointerup',panEnd,true);addEventListener('pointercancel',panEnd,true);
+addEventListener('resize',()=>{if(screen==='battle')zoomApply();});
 $('rotL').onclick=()=>turnCam(-1);$('rotR').onclick=()=>turnCam(1);
 // mouse wheel turns the board one quarter per notch (trackpads are throttled so a swipe is one turn)
 let wheelAcc=0,wheelT=0;
