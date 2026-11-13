@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0910"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="favicon.ico" sizes="32x32"><link rel="icon" href="icon-192.png" type="image/png" sizes="192x192"><link rel="apple-touch-icon" href="icon-192.png"><meta name="mobile-web-app-capable" content="yes"></head><body>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0910"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="favicon.ico" sizes="32x32"><link rel="icon" href="icon-192.png" type="image/png" sizes="192x192"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Tactic Souls"><meta name="mobile-web-app-capable" content="yes"></head><body>
 <title>Tactic Souls</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -124,7 +124,7 @@ button small{font-size:10px;opacity:.8;margin-left:8px;letter-spacing:.04em}
 .sndbtn:focus-visible{outline:2px solid #fff3b0;outline-offset:2px}
 body[data-screen="title"] .sndbtn{display:none}
 .fsbtn{left:calc(env(safe-area-inset-left,0px) + 88px)}.psbtn{left:calc(env(safe-area-inset-left,0px) + 136px)}.fsbtn[hidden]+.psbtn{left:calc(env(safe-area-inset-left,0px) + 88px)}body[data-screen="title"] .psbtn,body[data-screen="battle"] .psbtn{display:none!important}body[data-screen="battle"] .fsbtn,.fsbtn[hidden]{display:none!important}
-@media (max-height:540px){.sndbtn{top:30px;left:34px;width:32px;height:28px}.sndbtn img{width:32px;height:27px}.fsbtn{left:72px}.psbtn{left:110px}.fsbtn[hidden]+.psbtn{left:72px}#scr-battle .b-top{padding-left:52px}}
+@media (max-height:540px){.sndbtn{top:calc(env(safe-area-inset-top,0px) + 30px);left:calc(env(safe-area-inset-left,0px) + 34px);width:32px;height:28px}.sndbtn img{width:32px;height:27px}.fsbtn{left:calc(env(safe-area-inset-left,0px) + 72px)}.psbtn{left:calc(env(safe-area-inset-left,0px) + 110px)}.fsbtn[hidden]+.psbtn{left:calc(env(safe-area-inset-left,0px) + 72px)}#scr-battle .b-top{padding-left:calc(env(safe-area-inset-left,0px) + 52px)}}
 .frame>i{position:absolute;display:block;image-rendering:pixelated}
 .frame .t,.frame .b{left:0;right:0;height:14px;background:repeating-linear-gradient(90deg,#f6dc7c 0 3px,#e2b84f 3px 7px,#a47a24 7px 9px,#e2b84f 9px 12px)}
 .frame .t{top:0;height:calc(14px + env(safe-area-inset-top,0px));box-shadow:inset 0 -3px 0 #6e5216,0 3px 0 var(--edge)}
@@ -660,7 +660,8 @@ canvas.vine{position:absolute;left:0;top:-6px;width:100%;pointer-events:none;z-i
 .fsbtn[hidden]+.psbtn+.pfbtn{left:calc(env(safe-area-inset-left,0px) + 136px)}
 body[data-screen="title"] .pfbtn,body[data-screen="battle"] .pfbtn,body[data-screen="build"] .pfbtn,body[data-screen="recruit"] .pfbtn{display:none!important}
 body[data-screen="profile"] .pfbtn img{filter:drop-shadow(0 0 4px rgba(240,200,74,.8))}
-@media (max-height:540px){.pfbtn{left:148px;width:33px!important;height:33px!important;margin-top:-3px!important}.pfbtn img{width:33px!important;height:33px!important}.fsbtn[hidden]+.psbtn+.pfbtn{left:110px}}
+@media (max-height:540px){.pfbtn{left:calc(env(safe-area-inset-left,0px) + 148px);width:33px!important;height:33px!important;margin-top:-3px!important}.pfbtn img{width:33px!important;height:33px!important}.fsbtn[hidden]+.psbtn+.pfbtn{left:calc(env(safe-area-inset-left,0px) + 110px)}}
+@media (max-height:360px){.title-art{width:min(52vw,480px)!important}.title-wrap{gap:4px!important}.title-foot{gap:2px!important}.title-foot .savenote{font-size:11px;margin:0}}
 /* play screen tiles appear as the story unlocks them; --cols is set from how many are showing */
 #scr-menu .menu-btns{display:flex!important;flex-wrap:wrap;justify-content:center;--g:16px;gap:var(--g)!important;width:100%;max-width:calc(var(--cols,3) * 340px);margin-inline:auto;box-sizing:border-box}
 #scr-menu .menu-btns>button{flex:0 0 calc((100% - (var(--cols,3) - 1) * var(--g)) / var(--cols,3));min-width:0;box-sizing:border-box}
@@ -4196,6 +4197,7 @@ function syncMenuLocks(){const best=storyBest();
     b.hidden=!open;b.disabled=!open;b.classList.toggle('go',open);b.classList.toggle('soon',!open);b.classList.remove('locked');b.querySelector('.soonchip').textContent='SOON';b.querySelector('.soonchip').hidden=!open||id!=='mPvp';$(sub).textContent=txt;}
   const box=$('mBoard').parentElement,n=[...box.children].filter(b=>!b.hidden).length;box.style.setProperty('--cols',n<=3?n:n===4?2:3);}
 function soonNote(title,text){$('soonTitle').textContent=title;$('soonText').textContent=text;$('soonModal').hidden=false;if(typeof uiClick==='function')uiClick();setTimeout(()=>$('soonOk').focus(),0);}
+window.tsNote=soonNote;
 $('soonOk').onclick=()=>{$('soonModal').hidden=true;};
 $('soonModal').addEventListener('click',e=>{if(e.target.id==='soonModal')$('soonModal').hidden=true;});
 syncPfBtn();
@@ -4741,7 +4743,11 @@ function fsIcon(on){const c=document.createElement('canvas');c.width=20;c.height
     px(Math.min(ax,ax+hx*5)+(hx<0?1:0),ay-1,6,2,'#f0c84a');px(ax,Math.min(ay,ay+hy*5)+(hy<0?1:0)-1,2,6,'#f0c84a');px(ax,ay-1,1,1,'#fff0b0');};
   corner(2,2,1,1);corner(16,2,-1,1);corner(2,14,1,-1);corner(16,14,-1,-1);return c.toDataURL();}
 (function(){const $=id=>document.getElementById(id);const b=$('fsBtn'),de=document.documentElement;const can=!!(de.requestFullscreen||de.webkitRequestFullscreen)&&document.fullscreenEnabled!==false;
-  if(!can||matchMedia('(display-mode: fullscreen)').matches)return;b.hidden=false;
+  const installed=matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  const ios=/iPhone|iPod/.test(navigator.userAgent)||(/iPad|Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1);
+  if(installed)return;
+  if(!can&&ios){b.hidden=false;$('fsImg').src=fsIcon(false);b.title=b.ariaLabel='Full screen';b.addEventListener('click',()=>{if(window.tsNote)window.tsNote('Full screen on iPhone','Safari cannot hide its bars from inside a page. Tap the Share button, then Add to Home Screen. Open Tactic Souls from your home screen and it fills the whole screen. Sign in with X there once and your warbands come with you.');});return;}
+  if(!can)return;b.hidden=false;
   const sync=()=>{const on=!!(document.fullscreenElement||document.webkitFullscreenElement);$('fsImg').src=fsIcon(on);b.title=b.ariaLabel=on?'Leave full screen':'Full screen';};sync();
   document.addEventListener('fullscreenchange',sync);document.addEventListener('webkitfullscreenchange',sync);
   b.addEventListener('click',async()=>{try{if(document.fullscreenElement||document.webkitFullscreenElement){await (document.exitFullscreen||document.webkitExitFullscreen).call(document);}
