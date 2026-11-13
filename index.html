@@ -4123,8 +4123,14 @@ function renderProfile(){const cur=currentPfp();drawPfpCircle($('pfBig'),cur,44)
     const c=document.createElement('canvas');drawPfpCircle(c,p,22);b.append(c);
     b.onclick=()=>{profile.pfp=p;saveProfile();syncPfBtn();renderProfile();if(typeof uiClick==='function')uiClick();};box.append(b);});
   if(!ch.some(p=>p.kind==='g')){const h=document.createElement('div');h.className='label grp';h.textContent='Guests unlock as you beat their missions';box.append(h);}}
-function commitName(){const v=cleanName($('pfName').value);$('pfName').value=v;if(v===profile.name)return;profile.name=v;saveProfile();renderProfile();
-  const b=$('pfSave');b.textContent='Saved';clearTimeout(b._t);b._t=setTimeout(()=>b.textContent='Save',1200);}
+function commitName(){const v=cleanName($('pfName').value);$('pfName').value=v;if(v===profile.name)return;const b=$('pfSave');
+  const done=(txt)=>{b.textContent=txt;clearTimeout(b._t);b._t=setTimeout(()=>b.textContent='Save',1600);};
+  if(!srvOn()){profile.name=v;saveProfile();renderProfile();done('Saved');return;}
+  // signed in: the server makes sure no one else already has this name
+  b.textContent='...';srvChain=srvChain.then(()=>rpc('ts_set_name',{p_name:v})).then(r=>{
+    if(r&&r.ok){profile.name=r.name;saveProfile();if(screen==='profile'){$('pfName').value=r.name;renderProfile();}done('Saved');}
+    else{if(screen==='profile')$('pfName').value=profile.name;done('Taken');srvToast(`${v} is already taken. Try another name.`);}})
+    .catch(e=>{console.warn('name',e);if(screen==='profile')$('pfName').value=profile.name;done('Save');srvToast('Could not save your name right now.');});}
 $('pfSave').onclick=commitName;$('pfName').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();commitName();$('pfName').blur();}});$('pfName').addEventListener('blur',commitName);
 $('pfBtn').onclick=()=>{if(screen==='profile')return;pfFrom=screen;openProfile();};
 let pfFrom='menu';
@@ -4672,7 +4678,9 @@ function gateDone(mode){if(!GATE)return;
   renderAccount();}
 async function finishX(){try{localStorage.setItem(OWNER_KEY,sbUser.id);}catch(e){}cloudOn=true;gateBusy(true);gMsg('Loading your warbands...');
   try{await srvSync();}catch(e){console.warn('server',e);cloudOn=false;gateBusy(false);$('gate').dataset.phase='sign';$('gateX').querySelector('span').textContent='Continue as @'+(xHandle(sbUser)||'player');$('gateOut').hidden=false;gMsg('Could not reach the game server. Try again in a moment.');return;}
-  const h=xHandle(sbUser);profile.account={x:h,id:sbUser.id};saveProfile();cloudPush();gateBusy(false);gMsg('');gateDone('x');}
+  const h=xHandle(sbUser);profile.account={x:h,id:sbUser.id};
+  if(profile.name){try{const r=await rpc('ts_set_name',{p_name:profile.name});if(r&&!r.ok){const was=profile.name;profile.name='';setTimeout(()=>srvToast(`Someone else already uses the name ${was}. Pick a new one in your Profile.`),1200);}}catch(e){console.warn('name',e);}}
+  saveProfile();cloudPush();gateBusy(false);gMsg('');gateDone('x');}
 async function continueX(){gateBusy(true);gMsg('Loading your save...');let row=null;
   try{const r=await sb.from('saves').select('data').eq('user_id',sbUser.id).maybeSingle();if(r.error)throw r.error;row=r.data;}
   catch(e){gateBusy(false);$('gateX').querySelector('span').textContent='Continue as @'+(xHandle(sbUser)||'player');$('gateOut').hidden=false;gMsg('Could not reach your save right now. Try again in a moment.');console.warn(e);return;}
