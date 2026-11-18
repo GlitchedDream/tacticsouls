@@ -96,7 +96,25 @@ td.n{text-align:right;white-space:nowrap}
 .res{text-align:center;padding:16px;border:2px dashed var(--gold2);border-radius:6px}
 .res .big{font-family:"Pixelify Sans";font-size:clamp(52px,8vw,80px);color:var(--gold);line-height:1}
 /* ranks */
-.ladder{display:flex;flex-direction:column-reverse;gap:10px;max-width:680px}
+.ob{display:inline-block;width:.95em;height:.95em;border-radius:50%;vertical-align:-.12em;background:radial-gradient(circle at 35% 30%,#fff6c8 0 18%,#f0c84a 20% 58%,#9a6a1c 62%);box-shadow:inset 0 0 0 1.5px #6b4510}
+.steps4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:end}
+.rt{background:linear-gradient(180deg,color-mix(in srgb,var(--m) 16%,var(--panel)),var(--panel) 60%);border:2px solid color-mix(in srgb,var(--m) 55%,var(--line));border-radius:6px;padding:16px 14px 0;text-align:center;box-shadow:0 4px 0 #0006;display:flex;flex-direction:column;align-items:center}
+.rt .em{width:104px;height:117px;filter:drop-shadow(0 4px 0 #0008)}
+.rt h3{color:var(--m);margin:8px 0 2px;font-size:24px}
+.rt .odds{font-family:"Pixelify Sans",monospace;font-size:34px;line-height:1;color:var(--ink)}
+.rt small{color:var(--mute);display:block}
+.rt ul{list-style:none;padding:0;margin:10px 0 0;font-size:14px;display:grid;gap:4px;text-align:left;width:100%}
+.rt ul li::before{content:"▸ ";color:var(--m)}
+.rt .plinth{align-self:stretch;margin:14px -14px 0;background:repeating-linear-gradient(90deg,#00000030 0 12px,transparent 12px 24px),color-mix(in srgb,var(--m) 35%,#1b1529);border-top:3px solid var(--m)}
+.shine{animation:none}
+@media(prefers-reduced-motion:no-preference){.shine{animation:glint 2.8s ease-in-out infinite}@keyframes glint{50%{filter:drop-shadow(0 4px 0 #0008) drop-shadow(0 0 10px #f0c84a)}}}
+.miles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}@media(max-width:760px){.miles{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:420px){.miles{grid-template-columns:1fr}}
+.mile{position:relative;background:var(--panel);border:2px solid var(--line);border-radius:6px;padding:16px 12px 14px;text-align:center;box-shadow:0 4px 0 #0006}
+.mile .em{width:96px;height:108px;filter:drop-shadow(0 4px 0 #0008)}
+.mile h3{font-size:19px;color:var(--gold);margin:8px 0 4px}.mile p{margin:0;font-size:14px;color:var(--mute)}
+.mile .no{position:absolute;top:8px;left:8px;font-family:"Pixelify Sans",monospace;font-size:13px;background:var(--gold);color:#2a1a08;border-radius:3px;padding:1px 6px}
+@media(max-width:860px){.steps4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.steps4{grid-template-columns:1fr}}
 .rung{display:flex;gap:14px;align-items:center;background:var(--panel);border:2px solid var(--line);border-radius:6px;padding:12px}
 .medal{flex:none;width:62px;height:62px;border-radius:50%;display:grid;place-items:center;font-family:"Pixelify Sans";font-size:15px;color:#14101e;font-weight:700;background:radial-gradient(circle at 35% 30%,#fff9,transparent 55%),var(--m);border:3px solid #0006;box-shadow:0 3px 0 #0008}
 /* missions */
@@ -126,8 +144,8 @@ footer{color:var(--mute);font-size:14px}
 <div>
 <div class="tag">A Hoodie Gang Creation</div>
 <h1>The Tactic Souls Field Codex</h1>
-<p>A turn-based tactics game on a grid, played like chess. Lead a warband of Ghost Kids through 69 story battles to the Temple of Lost Souls. Made by Glitch. Free in the browser at <a href="https://tacticsouls.xyz">tacticsouls.xyz</a>, on PC and phone.</p>
-<div class="legend"><span>⚔️ melee</span><span>🏹 ranged</span><span>✨ magic</span><span>💚 heal</span><span>🛡️ defense</span><span>❤️ HP</span><span>💧 MP</span><span>⚡ speed</span><span>👣 move</span><span>🪙 Obols</span><span>◆ boss</span></div>
+<p>A turn-based tactics game on a grid, played like chess. Lead a warband of Ghost Kids through 69 story battles to the Temple of Lost Souls. Made by <a href="https://x.com/GlitchedDream">Glitch</a>. Free in the browser at <a href="https://tacticsouls.xyz">tacticsouls.xyz</a>, on PC and phone.</p>
+<div class="legend"><span>⚔️ melee</span><span>🏹 ranged</span><span>✨ magic</span><span>💚 heal</span><span>🛡️ defense</span><span>❤️ HP</span><span>💧 MP</span><span>⚡ speed</span><span>👣 move</span><span><i class="ob"></i> Obols</span><span>◆ boss</span></div>
 </div>
 </div>
 </header>
@@ -138,7 +156,7 @@ footer{color:var(--mute);font-size:14px}
 
 <section id="overview">
 <h2>Quick overview</h2>
-<p class="lede">The Gods of Ruin have enslaved the Ghost Kids, and their cult, the Ember Oath, burns the tribal lands. Three friends set out to save the Ghosts. They find allies on the road, search for the lost Soul tribe, and travel to each tribe's land until they reach the Temple of Lost Souls.</p>
+<p class="lede">The Gods of Ruin have enslaved the Ghost Kids, with their cult the Ember Oath burning the tribal lands. Three friends set out to save the Ghosts. They find allies on the road, search for the lost Soul tribe, and travel to each tribe's land until they reach the Temple of Lost Souls.</p>
 <div class="grid">
 <div class="card"><h3>🎯 The goal</h3><p style="margin:0">Win all 69 story battles across 7 chapters. Grow your squad, level it up, then climb the Leaderboard as a Warlord.</p></div>
 <div class="card"><h3>🧩 Your warband</h3><p style="margin:0">Start with a Hoplite, a Hunter and an Oracle. Up to 8 warriors, plus a 9th slot for your own Lost Soul after the story ends.</p></div>
@@ -192,7 +210,7 @@ footer{color:var(--mute);font-size:14px}
 <li>XP per action: hit a foe +2, KO +4 more, heal +2, Safety Shield +1.</li>
 <li>End of battle: win +6 (+3 if KO'd), loss +2. Story replays give 1/3 XP.</li>
 <li>Next level needs 8 + 4 × your level in XP.</li>
-<li>Story win +250 🪙, loss −50. Battle mode win: Easy 100, Normal 150, Elite 250.</li></ul></div>
+<li>Story win +250 <i class="ob"></i>, loss −50. Battle mode win: Easy 100, Normal 150, Elite 250.</li></ul></div>
 </div>
 <h3 style="margin:26px 0 10px">🧱 Terrain</h3>
 <p class="lede" style="margin-bottom:12px">Most ground costs 1 move per tile. These cost 2, so plan routes around them.</p>
@@ -222,7 +240,7 @@ footer{color:var(--mute);font-size:14px}
 <section id="ranks" hidden>
 <h2>Ranks</h2>
 <p class="lede">Every fighter for hire at the Outpost has a rank. The Outpost offers 3 fighters a day near your squad's average level. One of them gets the day's best roll.</p>
-<div class="ladder" id="ladder"></div>
+<div class="steps4" id="ladder"></div>
 <div class="box tip">💡 <b>Tip:</b> An Elite fighter is always shiny, in gold. The day's best roll is Elite only 1 time in 100.</div>
 <h3 style="margin:26px 0 10px">🏆 Warlord ranking</h3>
 <div class="card"><p style="margin:0">Every player is a Warlord. The Leaderboard sorts by furthest Story battle won, then PVP wins, then fewest PVP losses. Battle mode wins and losses stay private; PVP records are public.</p></div>
@@ -231,7 +249,7 @@ footer{color:var(--mute);font-size:14px}
 <section id="badges" hidden>
 <h2>Badges</h2>
 <p class="lede">There are no badges in Tactic Souls yet. Your milestones live on the road instead: recruits, new modes and your Lost Soul.</p>
-<div class="grid" id="miles"></div>
+<div class="miles" id="miles"></div>
 </section>
 
 <section id="missions" hidden>
@@ -289,13 +307,31 @@ addEventListener('hashchange',()=>{show();scrollTo({top:document.querySelector('
 /* road */
 const ROAD=[[1,'Start','Hoplite, Hunter and Oracle'],[3,'Mender joins','after battle 3'],[7,'Phantom joins','and the Outpost opens'],[20,'Battle mode','fight AI squads anytime'],[40,'Market','buy and sell warriors'],[60,'PVP','test your squad on others'],[69,'Lost Soul','your own reaper, 9th slot']];
 $('road').innerHTML=ROAD.map(([n,t,s])=>`<div class="stop"><b>${n}</b>${t}<br><small>${s}</small></div>`).join('');
-$('miles').innerHTML=ROAD.slice(1).map(([n,t,s])=>`<div class="card" style="display:flex;gap:12px;align-items:center"><div class="medal" style="--m:var(--gold)">${n}</div><div><b>${t}</b><br><small style="color:var(--mute)">Win story battle ${n}: ${s}.</small></div></div>`).join('');
+/* pixel emblem: laurel wreath, shield, ribbon, pips */
+const emblem=({c,d,inner,pips=0,ribbon,shiny})=>{let leaves='';
+ for(let i=0;i<7;i++){const y=60-i*7.2,x=10+Math.abs(3-i)*0.9-(i>3?(i-3)*1.6:0);leaves+=`<rect x="${x}" y="${y}" width="6" height="4" fill="${i%2?'#6fae4e':'#3f6a2a'}"/><rect x="${80-x-6}" y="${y}" width="6" height="4" fill="${i%2?'#6fae4e':'#3f6a2a'}"/>`}
+ let p='';for(let i=0;i<pips;i++){const x=40-(pips-1)*6+i*12;p+=`<path d="M${x} 1l2.4 4.6 5 .7-3.6 3.5.9 5-4.7-2.4-4.7 2.4.9-5-3.6-3.5 5-.7z" fill="#f0c84a" stroke="#6b4510" stroke-width="1"/>`}
+ return `<svg class="em${shiny?' shine':''}" viewBox="0 0 80 90" shape-rendering="crispEdges" aria-hidden="true">${leaves}
+ <path d="M20 14h40v6h4v30l-4 8-6 6-6 4-8 4-8-4-6-4-6-6-4-8V20h4z" fill="#14101e"/>
+ <path d="M23 17h34v5h4v27l-3 7-5 5-6 4-7 3-7-3-6-4-5-5-3-7V22h4z" fill="${d}"/>
+ <path d="M26 20h28v5h4v23l-3 6-4 4-5 3-6 3-6-3-5-3-4-4-3-6V25h4z" fill="${c}"/>
+ <rect x="26" y="20" width="28" height="3" fill="#ffffff55"/><rect x="22" y="25" width="3" height="20" fill="#ffffff30"/>
+ ${shiny?'<rect x="54" y="26" width="3" height="3" fill="#fff"/><rect x="51" y="29" width="3" height="3" fill="#fff8"/><rect x="57" y="29" width="3" height="3" fill="#fff8"/>':''}
+ <g transform="translate(40 43)">${inner}</g>${p}
+ ${ribbon?`<path d="M8 70h64l-4 6 4 6H8l4-6z" fill="#14101e"/><path d="M11 72h58l-3 4 3 4H11l3-4z" fill="${d}"/><text x="40" y="78.6" text-anchor="middle" font-family="Pixelify Sans,monospace" font-size="8" font-weight="700" fill="#fff">${ribbon}</text>`:''}</svg>`};
+const sprIn=k=>`<image href="${SPR[k]}" x="-17" y="-23" width="34" height="47" style="image-rendering:pixelated"/>`;
+const glyph=g=>`<text y="7" text-anchor="middle" font-size="22">${g}</text>`;
+const coinIn='<circle r="11" fill="#9a6a1c"/><circle r="9" fill="#f0c84a"/><rect x="-2" y="-6" width="4" height="12" fill="#9a6a1c"/><rect x="-4" y="-8" width="3" height="3" fill="#fff6c8"/>';
+const MIL=[[3,'Mender joins','A healer for the warband.',sprIn('Mender'),'#6fbf6a','#2f5f2c'],[7,'Phantom joins','The fifth warrior. The Outpost opens too.',sprIn('Phantom'),'#5aa9c8','#24546a'],
+ [20,'Battle mode','Fight AI squads anytime for XP and Obols.',glyph('⚔️'),'#4d86d8','#24406e'],[40,'The Market','Buy and sell warriors with other players.',coinIn,'#e89a3a','#7a4a14'],
+ [60,'PVP','Put your squad against other warlords.',glyph('🛡️'),'#e0503a','#6e2218'],[69,'Lost Soul','Your own reaper and a 9th squad slot.',sprIn('LostSoul'),'#f0c84a','#9a6a1c']];
+$('miles').innerHTML=MIL.map(([n,t,s,inner,c,d],i)=>`<div class="mile"><span class="no">Battle ${n}</span>${emblem({c,d,inner,pips:Math.min(3,1+Math.floor(i/2)),ribbon:'Unlocked',shiny:n===69})}<h3>${t}</h3><p>${s}</p></div>`).join('');
 
 /* status + terrain + difficulty */
 $('statusDl').innerHTML=[['📌 Pinned','Can\'t move on its next turn. From Pinning Shot.'],['🔥 Burning','1 damage on each other fighter\'s turn, up to 3 times. Ends when the burned fighter acts.'],['👻 Veiled','Rivals can\'t target it until it strikes or stands next to them.'],['🔗 Bound','Safety Shield: hits on the ally land on the Hoplite at 75%.'],['🔔 Last Bell','Lost Soul survives one KO at 1 HP.']].map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
 const where=k=>{const s=new Set();D.MISSIONS.forEach(m=>{if(m.theme.base===k||m.theme.alt===k||(m.theme.river&&k==='water'))s.add(D.CHAPTERS.find(c=>m.no>=c.from&&m.no<=c.to).roman)});return [...s].join(', ')};
 $('terrT').innerHTML=Object.entries(D.T).filter(([,t])=>t.cost>1).map(([k,t])=>`<tr><td><b>${t.name}</b></td><td class="n">${t.cost}</td><td>Chapter ${where(k)||'–'}</td></tr>`).join('');
-$('skdT').innerHTML=Object.entries(D.SKD).map(([k,s])=>`<tr><td><b>${s.label}</b></td><td>${s.lv<0?'1 below':s.lv>0?'1 above':'Same as'} your squad</td><td class="n">×${s.hp} / ×${s.dmg}</td><td class="n">×${s.xp}</td><td class="n">${D.SK_OBOLS[k]} 🪙</td></tr>`).join('');
+$('skdT').innerHTML=Object.entries(D.SKD).map(([k,s])=>`<tr><td><b>${s.label}</b></td><td>${s.lv<0?'1 below':s.lv>0?'1 above':'Same as'} your squad</td><td class="n">×${s.hp} / ×${s.dmg}</td><td class="n">×${s.xp}</td><td class="n">${D.SK_OBOLS[k]} <i class="ob"></i></td></tr>`).join('');
 
 /* calculator */
 const opts=a=>a.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
@@ -348,7 +384,9 @@ $('pasT').innerHTML=Object.entries(D.PASSIVES).flatMap(([c,ps])=>ps.map(p=>`<tr>
 /* ranks */
 const ODDS={low:'60%',avg:'30%',high:'9%',elite:'1%'};
 $('ladder').innerHTML=Object.entries(D.RANKS).map(([k,r])=>{const bn=Object.entries(r.bonus).map(([s,v])=>`+${v} ${s==='main'?'main stat':s==='guard'?'Def or Res':s==='hp'?'HP':'Speed'}`).join(', ')||'No bonus';
- return `<div class="rung"><div class="medal" style="--m:${r.col}">${r.label}</div><div><b>${r.label}${k==='elite'?' · Shiny ✦':''}</b><br><small style="color:var(--mute)">Best-roll odds ${ODDS[k]} · ${r.price.toLocaleString()} 🪙 · level ${r.lv<0?'1 below':r.lv>0?'1 above':'equal to'} your squad average · ${bn}</small></div></div>`}).join('');
+ const i=Object.keys(D.RANKS).indexOf(k),dk={low:'#4a4752',avg:'#2f5f2c',high:'#4a3a8a',elite:'#9a6a1c'}[k],cls=['Hunter','Oracle','Mender','shiny'][i];
+ return `<div class="rt" style="--m:${r.col}">${emblem({c:r.col,d:dk,inner:sprIn(cls),pips:i+1,ribbon:r.label.toUpperCase(),shiny:k==='elite'})}<h3>${r.label}${k==='elite'?' ✦':''}</h3><div class="odds">${ODDS[k]}</div><small>best-roll odds</small>
+ <ul><li>${r.price.toLocaleString()} <i class="ob"></i></li><li>Level ${r.lv<0?'1 below':r.lv>0?'1 above':'equal to'} squad avg</li><li>${bn}</li>${k==='elite'?'<li>Always shiny, in gold</li>':''}</ul><div class="plinth" style="height:${10+i*16}px"></div></div>`}).join('');
 
 /* missions */
 const SLOW=new Set(Object.keys(D.T).filter(k=>D.T[k].cost>1));
