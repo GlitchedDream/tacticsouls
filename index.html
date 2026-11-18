@@ -1666,11 +1666,11 @@ const ABIL={
   strike:{name:'Attack',kind:'phys',power:1,range:[1,1],melee:true,mp:0,desc:'Spear thrust at an adjacent foe.'},
   staff:{name:'Attack',kind:'mag',power:0.8,range:[1,3],bolt:true,mp:0,desc:'Arcane bolt, 1 to 3 tiles. Uses Mag and ignores facing.'},
   knife:{name:'Knife',kind:'phys',power:0.5,range:[1,1],melee:true,mp:0,desc:'A quick, weak stab at an adjacent foe.'},
-  shoot:{name:'Attack',kind:'phys',power:1,range:[2,5],bow:true,mp:0,desc:'Bow shot, 2 to 5 tiles. +1 range from 2+ height above.'},
+  shoot:{name:'Attack',kind:'phys',power:1,range:[2,5],bow:true,mp:0,desc:'Bow shot, 2 to 5 tiles, never at a foe beside you. +1 range from 2+ height above.'},
   mstaff:{name:'Attack',kind:'phys',power:0.8,range:[1,1],melee:true,mp:0,desc:'A light staff strike at an adjacent foe.'},
   bash:{name:'Shield Bash',kind:'phys',power:0.8,range:[1,1],melee:true,mp:2,push:true,desc:'Hit and shove the target back one tile.'},
   ward:{name:'Safety Shield',kind:'support',range:[1,5],mp:2,desc:'Bind an ally within 5 tiles. Until your next turn, every hit on them lands on you at 75%.'},
-  pin:{name:'Pinning Shot',kind:'phys',power:0.6,range:[2,5],bow:true,mp:2,pin:true,desc:'Weaker shot, 2 to 5 tiles. The target cannot move on its next turn.'},
+  pin:{name:'Pinning Shot',kind:'phys',power:0.6,range:[2,5],bow:true,mp:2,pin:true,desc:'Weaker shot, 2 to 5 tiles, never at a foe beside you. The target cannot move on its next turn.'},
   fire:{name:'Fire',kind:'mag',power:0.9,range:[1,4],aoe:1,mp:4,desc:'Burns a 3x3 square up to 4 tiles away. Hits allies too. Ignores facing.'},
   fireB:{name:'Fire',kind:'mag',power:1.1,range:[1,4],mp:4,burn:true,desc:'Scorches one target up to 4 tiles away and sets it burning. Ignores facing.'},
   blades:{name:'Attack',kind:'phys',power:1,range:[1,1],melee:true,mp:0,backBonus:true,desc:'Twin sickle strike at an adjacent foe. Cuts deeper from behind.'},
@@ -3424,9 +3424,10 @@ function calc(att,from,def,ab){
   return {wall,warded,dmg:Math.max(1,Math.round(raw*fm*hm*dm*(wall?1-WALL_CUT:1))),hit:{front:85,side:92,back:100}[rel]-(ab.bow&&rel!=='back'?5:0),rel,hm};
 }
 const reachD=(ab,a,b)=>ab.melee?Math.max(Math.abs(a.i-b.i),Math.abs(a.j-b.j)):dist(a,b); // melee reaches all 8 neighbors
+const tooClose=(ab,m,f)=>!!ab.bow&&Math.max(Math.abs(m.i-f.i),Math.abs(m.j-f.j))<=1; // a bow cannot fire at a foe beside it, diagonals included
 function targetTiles(att,from,ab){const ft=tileAt(from.i,from.j),out=[];
   for(const m of map){if(m.pillar)continue;const d=reachD(ab,m,from);let max=ab.range[1];if(ab.bow&&ft.h-m.h>=2)max++;
-    if(d<ab.range[0]||d>max)continue;if(ab.melee&&Math.abs(m.h-ft.h)>2)continue;out.push(m);}
+    if(d<ab.range[0]||d>max||tooClose(ab,m,from))continue;if(ab.melee&&Math.abs(m.h-ft.h)>2)continue;out.push(m);}
   return out;}
 // Splash: a 3x3 square around the target
 const SPLASH=[[0,0],[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
@@ -3638,7 +3639,7 @@ let pmove=null,pmoveKeys=null,pattack=null,planCache=new Map(),hoverPlan=null,ho
 const isTouch=()=>performance.now()-lastTouch<1500||matchMedia('(pointer:coarse)').matches;
 function interactive(){return screen==='battle'&&active&&active.team==='ally'&&!busy&&!over&&!paused&&!window.__AUTOPLAY;}
 function canHit(u,from,ab,m){if(!m||m.pillar)return false;const ft=tileAt(from.i,from.j),d=reachD(ab,m,from);let max=ab.range[1];if(ab.bow&&ft.h-m.h>=2)max++;
-  if(d<ab.range[0]||d>max)return false;if(ab.melee&&Math.abs(m.h-ft.h)>2)return false;return true;}
+  if(d<ab.range[0]||d>max||tooClose(ab,m,from))return false;if(ab.melee&&Math.abs(m.h-ft.h)>2)return false;return true;}
 function scorePlan(u,from,ab,m){
   if(ab.kind==='heal'||ab.kind==='support')return 10;
   let s=0;
@@ -3654,8 +3655,9 @@ function planFor(u,m,ids,opts){
   const froms=canMove?[...reach(u).values()]:[here];let best=null;
   for(const id of ids){const ab=ABIL[id];if(!ab||ab.mp>u.mp)continue;
     if(ab.aoe&&o&&o.ko)continue;if(!validTarget(ab,m,u))continue;
-    for(const f of (ab.step?[here]:froms)){if(!canHit(u,f,ab,m))continue;const moved=f.i!==u.i||f.j!==u.j;const spot=ab.step?stepSpot(u,o):null;
-      const sc=scorePlan(u,spot||f,ab,m)+(ab.step?6:0)-(f.c||0)*1-(moved?2:0);
+    const fs=ab.step||(ab.scythe&&canHit(u,here,ab,m))?[here]:froms; // the scythe is thrown from where he stands when the foe is in reach
+    for(const f of fs){if(!canHit(u,f,ab,m))continue;const moved=f.i!==u.i||f.j!==u.j;const spot=ab.step?stepSpot(u,o):null;
+      const sc=ab.scythe?-(f.c||0)*10-dist(f,m):scorePlan(u,spot||f,ab,m)+(ab.step?6:0)-(f.c||0)*1-(moved?2:0); // out of reach: the fewest steps, then the farthest throw
       if(!best||sc>best.s)best={s:sc,ab,from:f,m,moved,spot};}}
   return best;}
 function specialIds(u){return u.abil.filter(id=>!PRIMARY[u.cls].includes(id));}
@@ -3675,6 +3677,7 @@ const angDiff=(a,b)=>{let d=Math.abs(a-b)%(Math.PI*2);return d>Math.PI?Math.PI*2
 function leanPlan(base){if(!base)return base;const u=active,o=unitAt(base.m.i,base.m.j);if(!o||o===u)return base;
   const ab=base.ab,mt=tileAt(o.i,o.j),ep=proj(o.i+.5,o.j+.5,mt.h);
   if(ab.step){const sp=base.spot||base.from,st=tileAt(sp.i,sp.j),sp2=proj(sp.i+.5,sp.j+.5,st.h);return {...base,ang:Math.atan2(ep[1]-sp2[1],ep[0]-sp2[0])};}
+  if(ab.scythe)return {...base,ang:(()=>{const ft=tileAt(base.from.i,base.from.j),fp=proj(base.from.i+.5,base.from.j+.5,ft.h);return Math.atan2(ep[1]-fp[1],ep[0]-fp[0]);})()};
   const angOf=f=>{const ft=tileAt(f.i,f.j),fp=proj(f.i+.5,f.j+.5,ft.h);return Math.atan2(ep[1]-fp[1],ep[0]-fp[0]);};
   if(!mouseCv)return {...base,ang:angOf(base.from)};
   const froms=(!u.moved&&!u.pinnedNow)?[...reach(u).values()]:[{i:u.i,j:u.j,c:0}];
@@ -3781,7 +3784,7 @@ $('cmds').addEventListener('click',e=>{
   if(a==='end'&&interactive()){hideActPick();infoPin=null;endTurn();}
 });
 function touchReset(){if(performance.now()-lastTouch<3000){hover=null;hoverPlan=hoverSpecial=hoverPath=null;}}
-function isRangedPlan(p){return p&&p.ab&&!p.ab.melee&&!p.ab.step&&p.ab.range&&p.ab.range[1]>=2;}
+function isRangedPlan(p){return p&&p.ab&&!p.ab.melee&&!p.ab.step&&!p.ab.scythe&&p.ab.range&&p.ab.range[1]>=2;}
 function startAim(p){const u=active,froms=new Map();
   for(const f of reach(u).values())if(canHit(u,f,p.ab,p.m))froms.set(f.i+','+f.j,f);
   if(froms.size<2)return false;
