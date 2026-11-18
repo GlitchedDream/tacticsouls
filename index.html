@@ -3854,7 +3854,7 @@ function nextLine(){if(!dlg)return;
   dlg.k++;if(dlg.k>=dlg.lines.length){endDialog();return;}
   const L=dlg.lines[dlg.k],sp=speakerOf(L),u=sp.u;const box=$('dlg');
   box.className='win dlg '+sp.side;$('dlgName').textContent=sp.label||'';$('dlgName').style.color=u?`var(--${u.team||'ally'})`:'';
-  const pc=$('dlgPfp');pc.hidden=!u;if(u){const g=pc.getContext('2d');g.clearRect(0,0,22,22);const dy=Math.max(0,...[u.hat,...[].concat(u.acc||[])].filter(Boolean).map(h=>-(HATS[h].top||0)));withColor(u.team==='foe'?null:team&&team.color,()=>paintSprite(g,{cls:u.cls,team:u.team||'ally',name:u.name,guest:u.guest,shiny:u.shiny,trueMask:u.trueMask,gpal:u.gpal,hat:u.hat,xpal:u.xpal,acc:u.acc},'front',0,dy,sp.side==='right',undefined,22));
+  const pc=$('dlgPfp');pc.hidden=!u;if(u){const g=pc.getContext('2d');g.clearRect(0,0,22,22);const dy=Math.max(0,...[u.hat,...[].concat(u.acc||[])].filter(Boolean).map(h=>-(HATS[h].top||0)));withColor(u.team==='foe'?null:team&&team.color,()=>paintSprite(g,{cls:u.cls,look:u.look,team:u.team||'ally',name:u.name,guest:u.guest,shiny:u.shiny,trueMask:u.trueMask,gpal:u.gpal,hat:u.hat,xpal:u.xpal,acc:u.acc},'front',0,dy,sp.side==='right',undefined,22));
     if(screen==='battle'&&u.i!==undefined){sel={i:u.i,j:u.j};const other=sp.side==='right'?dlg.ctx.cap:dlg.ctx.rival;if(other&&!u.ko)faceToward(u,other);}}
   let txt=L.text;if(typeof txt==='object')txt=txt[(dlg.ctx.rec&&dlg.ctx.rec.cls)]||Object.values(txt)[0];
   dlg.full=dlg.fill(txt);$('dlgText').textContent='';$('dlgMore').hidden=true;let n=0;
@@ -4310,16 +4310,17 @@ function profileName(){return profile.name||(team?team.name:'Nameless');}
 // warriors from every warband, then every guest who has fought beside you
 function pfpChoices(){const out=[],seen=new Set();
   // your current warband first, each in its squad order (captain, starters, then bench)
-  [team,...slots.filter(x=>x&&x!==team)].forEach(t=>{if(!t)return;lineupOf(t).map(k=>t.members[k]).forEach(m=>{const id='w|'+t.name+'|'+m.name;if(seen.has(id))return;seen.add(id);out.push({kind:'w',cls:m.cls,shiny:!!m.shiny,color:t.color,name:m.name,team:t.name});});});
+  [team,...slots.filter(x=>x&&x!==team)].forEach(t=>{if(!t)return;lineupOf(t).map(k=>t.members[k]).forEach(m=>{const id='w|'+t.name+'|'+m.name;if(seen.has(id))return;seen.add(id);out.push({kind:'w',cls:m.cls,shiny:!!m.shiny,color:t.color,name:m.name,team:t.name,...(m.ls?{ls:m.ls}:{})});});});
   const best=storyBest(),g=new Map();
   MISSIONS.forEach(M=>{if(M.no>best)return;guestsOf(M).forEach(x=>g.set(x.name,x));});
   for(const name of g.keys())out.push({kind:'g',name});
   return out;}
 function guestDef(name){let d=null;MISSIONS.forEach(M=>guestsOf(M).forEach(x=>{if(x.name===name)d=x;}));return d;}
-function currentPfp(){if(profile.pfp)return profile.pfp;if(team){const m=team.members[capIdx(team)];return {kind:'w',cls:m.cls,shiny:!!m.shiny,color:team.color,name:m.name,team:team.name};}return null;}
+function currentPfp(){if(profile.pfp)return profile.pfp;if(team){const m=team.members[capIdx(team)];return {kind:'w',cls:m.cls,shiny:!!m.shiny,color:team.color,name:m.name,team:team.name,...(m.ls?{ls:m.ls}:{})};}return null;}
 const samePfp=(a,b)=>a&&b&&a.kind===b.kind&&a.name===b.name&&(a.kind==='g'||a.team===b.team);
 // the unit a picture stands for, and how far its headgear reaches above the sprite
 function pfpUnit(p){if(!p)return null;if(p.kind==='g'){const d=guestDef(p.name);if(!d)return null;return {u:{cls:d.cls,look:d.look,name:d.name,guest:true,team:'ally',gpal:GUEST_PAL[d.pal],acc:d.acc},color:null};}
+  if(p.cls==='LostSoul'&&!p.ls){const t=slots.find(x=>x&&x.name===p.team)||team,m=t&&t.members.find(x=>x.name===p.name&&x.cls==='LostSoul');if(m&&m.ls)p={...p,ls:m.ls};} // older saved pictures lack the cosmetic build
   return {u:memberUnit(p),color:p.color};}
 function paintPfpSprite(g,p,x,y,now){const pu=pfpUnit(p);if(!pu)return false;const f=()=>paintSprite(g,pu.u,'front',x,y,false,now);if(pu.color)withColor(pu.color,f);else f();return true;}
 // a round portrait: dark well, the head and shoulders, a two-tone gold ring. S is the canvas size in art pixels
