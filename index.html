@@ -1043,8 +1043,8 @@ body[data-screen="profile"] .pfbtn img{filter:drop-shadow(0 0 4px rgba(240,200,7
     <button type="button" class="go" id="mBattle">Battle<span>Random skirmishes against AI squads.</span></button>
     <button type="button" class="go" id="mOutpost">Outpost<span id="mOutpostSub">Daily fighters for hire. 1 in 100 are shiny.</span></button>
     <button type="button" class="go" id="mBoard">Leaderboard<span>Warlords ranked by Story and PVP.</span></button>
-    <button type="button" class="soon locked" id="mPvp" disabled>PVP <span class="soonchip">LOCKED</span><span id="mPvpSub">Unlocks after Story mission 69.</span></button>
-    <button type="button" class="soon locked" id="mMarket" disabled>Market <span class="soonchip">LOCKED</span><span id="mMarketSub">Unlocks after Story mission 69.</span></button>
+    <button type="button" class="soon locked" id="mPvp" disabled>PVP <span class="soonchip">LOCKED</span><span id="mPvpSub">Unlocks after Story mission 60.</span></button>
+    <button type="button" class="soon locked" id="mMarket" disabled>Market <span class="soonchip">LOCKED</span><span id="mMarketSub">Unlocks after Story mission 40.</span></button>
   </div>
 </section>
 
@@ -3831,8 +3831,8 @@ Object.assign(DIALOG,{"61": {"intro": [{"who": "narr", "text": "South of the sal
 // told once, the first time a warband clears the mission that opens a new tile
 const UNLOCK_LINES={
   20:[{who:'narr',text:'A new path opens on your Play screen. In Battle, you can fight AI squads anytime to earn XP and Obols for your warband.'}],
-  40:[{who:'narr',text:'Word of your warband has spread across the five lands. PVP is now on your Play screen, where other warlords can test your squad.'}],
-  60:[{who:'narr',text:'The traders of the tribes have found you. The Market is now on your Play screen. Buy and sell warriors to build a squad strong enough for the bosses ahead.'}]};
+  40:[{who:'narr',text:'The traders of the tribes have found you. The Market is now on your Play screen. Buy and sell warriors to build a squad strong enough for the bosses ahead.'}],
+  60:[{who:'narr',text:'Word of your warband has spread across the five lands. PVP is now on your Play screen, where other warlords can test your squad.'}]};
 // in Battle mode the AI rival gloats, darkly
 const TAUNTS=["Was that the whole squad? I have seen scarier funeral processions.", "Don't worry. We'll tell everyone you died bravely. We'll be lying, but we'll tell them.", "I'd say good fight, but my grandmother hits harder, and she has been dead for six years.", "Your captain fell over before I finished warming up.", "Leave the sandals. You won't need them where you're going.", "The gods were watching. Even they looked away.", "Somewhere a bard is already writing a very short song about you.", "Next time bring more fighters. Or better ones. Or just stay home.", "I'll hang your shield over my bed. It's the only part of you that did any work.", "Tell the gravediggers to dig it shallow. You won't be staying long.", "That was a battle? I've lost more blood shaving.", "Our healer slept through the whole thing. She says thanks for the nap.", "Bury them facing the mountain. It could use a laugh.", "The war room sent its finest? Then the war room is in trouble.", "I've fought scarecrows with better footwork. At least the scarecrows stood still with dignity.", "Go home and tell your mothers you met greatness. Then tell them it wasn't you."];
 function skTaunt(){const a=TAUNTS.slice().sort(()=>Math.random()-.5);return [{who:'rival',title:'Rival Captain',text:a[0]},{who:'rival',title:'Rival Captain',text:a[1]}];}
@@ -4394,8 +4394,8 @@ function renderBoard(){const L=rankBoard(boardEntries());boardTop=L.slice(0,5);c
 $('lbBack').onclick=()=>openMenu();
 $('mBoard').onclick=()=>openBoard();
 // ----- PVP and Market: open once the Story is finished -----
-// Battle opens after mission 20, PVP after 40, the Market after 60 (furthest warband counts)
-const UNLOCK_AT={mBattle:20,mPvp:40,mMarket:60};
+// Battle opens after mission 20, the Market after 40, PVP after 60 (furthest warband counts)
+const UNLOCK_AT={mBattle:20,mMarket:40,mPvp:60};
 function syncMenuLocks(){const best=storyBest();
   $('mBattle').hidden=best<UNLOCK_AT.mBattle;
   for(const[id,sub,txt]of[['mPvp','mPvpSub','Fight warlords in the Pit. Records are public.'],['mMarket','mMarketSub','Buy, sell and trade warriors.']]){const b=$(id),open=best>=UNLOCK_AT[id];
